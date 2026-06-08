@@ -203,23 +203,23 @@ const Transactions = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="min-w-0">
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Transactions</h1>
                     <p className="text-sm text-slate-500 mt-1.5">All your income and expenses</p>
                 </div>
-                <Button onClick={onCreate}>
+                <Button onClick={onCreate} className="w-fit justify-center">
                     <Plus size={16} /> Add Transaction
                 </Button>
             </div>
 
             <div className="bg-white rounded-3xl border border-slate-100 p-6">
-                <div className="mb-5 flex items-center justify-between gap-3">
-                    <div>
+                <div className="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="min-w-0">
                         <h2 className="text-lg font-bold text-slate-900 tracking-tight">Transaction Trend</h2>
                         <p className="text-xs text-slate-500 mt-1">Income vs expenses over time</p>
                     </div>
-                    <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-full shrink-0">
+                    <div className="flex w-full sm:w-auto items-center gap-1 bg-slate-100 p-1 rounded-full sm:shrink-0 overflow-x-auto">
                         {[
                             { value: '30d', label: '30D' },
                             { value: '3m', label: '3M' },
@@ -229,7 +229,7 @@ const Transactions = () => {
                             <button
                                 key={r.value}
                                 onClick={() => setTimeRange(r.value)}
-                                className={`px-3 py-1 rounded-full text-xs font-medium transition ${
+                                className={`flex-1 sm:flex-none px-3 py-1 rounded-full text-xs font-medium transition whitespace-nowrap ${
                                     timeRange === r.value
                                         ? 'bg-white shadow-sm text-slate-900'
                                         : 'text-slate-600 hover:text-slate-900'

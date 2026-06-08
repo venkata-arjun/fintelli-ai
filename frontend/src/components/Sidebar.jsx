@@ -32,7 +32,7 @@ const Sidebar = ({ isOpen = false, onClose }) => {
                 <div className="h-8 w-8 rounded-lg bg-linear-to-br from-violet-400 to-violet-600 flex items-center justify-center">
                     <Wallet size={16} className="text-white" />
                 </div>
-                <span className="font-bold text-slate-900">ExpenseAI</span>
+                <span className="font-bold text-slate-900">Fintelli AI</span>
             </div>
 
             <nav className="flex-1 p-3 space-y-1.5">

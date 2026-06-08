@@ -1,6 +1,39 @@
 import pool from "../db.js";
 import { analyzeBudgetList } from "../utils/gemini.js";
 
+const buildFallbackBudgetAnalyses = (budgets, currency) => ({
+  analyses: (budgets || []).map((b) => {
+    const spent = parseFloat(b.spent || 0);
+    const total = parseFloat(b.amount || 0);
+    const pct = total > 0 ? (spent / total) * 100 : 0;
+    const remaining = Math.max(total - spent, 0);
+    const overBy = Math.max(spent - total, 0);
+    const money = (amount) => `${currency} ${amount.toFixed(2)}`;
+
+    if (spent > total) {
+      return {
+        budgetId: b.id,
+        status: "concerning",
+        message: `${b.category_name} is over budget by ${money(overBy)} after spending ${money(spent)} of ${money(total)}.`,
+      };
+    }
+
+    if (pct >= 70) {
+      return {
+        budgetId: b.id,
+        status: "caution",
+        message: `${b.category_name} has used ${pct.toFixed(0)}% of its budget, with ${money(remaining)} left.`,
+      };
+    }
+
+    return {
+      budgetId: b.id,
+      status: "good",
+      message: `${b.category_name} is on track at ${pct.toFixed(0)}% used, with ${money(remaining)} still available.`,
+    };
+  }),
+});
+
 export const getBudgets = async (req, res) => {
   try {
     const result = await pool.query(
@@ -172,10 +205,17 @@ export const analyzeBudgets = async (req, res) => {
 
     const currency = userRes.rows[0]?.currency || "INR";
 
-    const data = await analyzeBudgetList({
-      budgets: result.rows,
-      currency,
-    });
+    let data;
+
+    try {
+      data = await analyzeBudgetList({
+        budgets: result.rows,
+        currency,
+      });
+    } catch (error) {
+      console.error("AnalyzeBudgets Gemini fallback:", error);
+      data = buildFallbackBudgetAnalyses(result.rows, currency);
+    }
 
     res.json(data);
   } catch (error) {
