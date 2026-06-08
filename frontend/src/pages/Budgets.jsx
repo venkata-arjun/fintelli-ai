@@ -129,23 +129,23 @@ const Budgets = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between gap-3">
-                <div>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="min-w-0">
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Budgets</h1>
-                    <p className="text-sm text-slate-500 mt-1.5">
+                    <p className="text-sm text-slate-500 mt-1.5 max-w-sm">
                         Set spending limits per category — AI scores each one automatically
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
                     <button
                         onClick={analyzeAll}
                         disabled={analyzing || budgets.length === 0}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium border border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 disabled:opacity-50 disabled:cursor-not-allowed transition whitespace-nowrap"
                     >
                         {analyzing ? <Spinner size="sm" /> : <Sparkles size={14} />}
                         {analyzing ? 'Analyzing' : hasAnalyses ? 'Re-analyze' : 'Analyze'}
                     </button>
-                    <Button onClick={onCreate}>
+                    <Button onClick={onCreate} size="sm" className="sm:px-5 sm:py-2.5 whitespace-nowrap">
                         <Plus size={16} /> Add Budget
                     </Button>
                 </div>
@@ -176,15 +176,15 @@ const Budgets = () => {
                         return (
                             <div
                                 key={b.id}
-                                className="bg-white rounded-3xl border border-slate-100 p-6 hover:border-slate-200 transition"
+                                className="bg-white rounded-3xl border border-slate-100 p-5 sm:p-6 hover:border-slate-200 transition min-w-0"
                             >
-                                <div className="flex items-start justify-between mb-5">
+                                <div className="flex items-start justify-between gap-3 mb-5">
                                     <CategoryBadge
                                         name={b.category_name}
                                         icon={b.category_icon}
                                         color={b.category_color}
                                     />
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1 shrink-0">
                                         <button
                                             onClick={() => onEdit(b)}
                                             className="p-1.5 hover:bg-slate-100 rounded-md text-slate-500 transition"
@@ -199,11 +199,11 @@ const Budgets = () => {
                                         </button>
                                     </div>
                                 </div>
-                                <div className="mb-3 flex items-baseline justify-between">
-                                    <span className="text-3xl font-bold tracking-tight text-slate-900">
+                                <div className="mb-3 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+                                    <span className="text-3xl font-bold tracking-tight text-slate-900 break-words">
                                         {formatCurrency(spent, currency)}
                                     </span>
-                                    <span className="text-sm text-slate-500">
+                                    <span className="text-sm text-slate-500 whitespace-nowrap">
                                         of {formatCurrency(total, currency)}
                                     </span>
                                 </div>
@@ -213,9 +213,9 @@ const Budgets = () => {
                                         style={{ width: `${pct}%` }}
                                     />
                                 </div>
-                                <div className="mt-2.5 flex items-center justify-between text-xs">
+                                <div className="mt-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs">
                                     <span className="text-slate-500 capitalize">{b.period} · {pct.toFixed(0)}% used</span>
-                                    <span className={over ? 'text-rose-600 font-medium' : 'text-slate-500'}>
+                                    <span className={`${over ? 'text-rose-600 font-medium' : 'text-slate-500'} sm:text-right`}>
                                         {over
                                             ? `Over by ${formatCurrency(spent - total, currency)}`
                                             : `${formatCurrency(total - spent, currency)} left`}

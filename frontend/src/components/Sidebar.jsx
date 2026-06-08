@@ -18,12 +18,16 @@ const navItems = [
     { to: '/insights', label: 'AI Insights', icon: Sparkles },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen = false, onClose }) => {
     const { user, logout } = useAuth();
     const initial = user?.name?.[0]?.toUpperCase() || 'U';
 
     return (
-        <aside className="w-64 bg-white border-r border-slate-100 hidden lg:flex flex-col shrink-0">
+        <aside
+            className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-100 transform transition-transform duration-300 ${
+                isOpen ? 'translate-x-0' : '-translate-x-full'
+            } lg:translate-x-0 flex flex-col shrink-0`}
+        >
             <div className="h-16 flex items-center gap-2 px-6 border-b border-slate-100">
                 <div className="h-8 w-8 rounded-lg bg-linear-to-br from-violet-400 to-violet-600 flex items-center justify-center">
                     <Wallet size={16} className="text-white" />
@@ -37,6 +41,7 @@ const Sidebar = () => {
                         key={to}
                         to={to}
                         end={to === '/'}
+                        onClick={onClose}
                         className={({ isActive }) =>
                             `relative flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition ${
                                 isActive
@@ -63,7 +68,10 @@ const Sidebar = () => {
                         <div className="text-xs text-slate-500 truncate">{user?.email}</div>
                     </div>
                     <button
-                        onClick={logout}
+                        onClick={() => {
+                            onClose?.();
+                            logout();
+                        }}
                         title="Logout"
                         className="p-1.5 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition shrink-0"
                     >

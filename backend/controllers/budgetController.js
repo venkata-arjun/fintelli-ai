@@ -1,4 +1,5 @@
 import pool from "../db.js";
+import { analyzeBudgetList } from "../utils/gemini.js";
 
 export const getBudgets = async (req, res) => {
   try {
@@ -169,7 +170,7 @@ export const analyzeBudgets = async (req, res) => {
       [req.userId],
     );
 
-    const currency = userRes.rows[0]?.currency || "USD";
+    const currency = userRes.rows[0]?.currency || "INR";
 
     const data = await analyzeBudgetList({
       budgets: result.rows,

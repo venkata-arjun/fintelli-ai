@@ -31,7 +31,7 @@ export const generateMonthlyInsight = async ({
   savingsRate,
   expenseBreakdown,
   previousMonths,
-  currency = "USD",
+  currency,
 }) => {
   const income = Number(totalIncome || 0);
   const expenses = Number(totalExpenses || 0);
@@ -80,11 +80,12 @@ Return ONLY valid JSON (no markdown, no commentary) in this exact structure:
   "recommendations": [
     {
       "title": "Short title",
-      "detail": "Actionable suggestion (1-2 sentences)"
+      "detail": "Actionable suggestion (1-2 sentences)",
+      "category": "Exact expense category this recommendation targets",
+      "estimatedSavings": number
     }
   ],
   "topSpendingCategory": "Category name or null",
-  "estimatedMonthlySavings": number,
   "healthScore": number
 }
 
@@ -92,6 +93,11 @@ Constraints:
 - "healthScore" must be an integer between 0 and 100.
 - Provide 3 recommendations.
 - Reference actual numbers from the data.
+- Each recommendation must target an actual expense category listed above.
+- "estimatedSavings" is a monthly estimate for that recommendation only. It must be justified by the category amount and the action in "detail".
+- Do not invent savings unrelated to the expense breakdown. If a recommendation does not reduce a listed expense category, set "estimatedSavings" to 0.
+- Do not include any total or overall savings field. The backend will sum recommendation estimates.
+- Use only the provided currency (${currency}) for all money values.
 - Tone: friendly but honest.`;
 
   try {
@@ -121,7 +127,7 @@ export const generateBudgetAlert = async ({
   spentAmount,
   daysIntoPeriod,
   totalPeriodDays,
-  currency = "USD",
+  currency,
 }) => {
   const budget = Number(budgetAmount || 0);
   const spent = Number(spentAmount || 0);
@@ -179,7 +185,7 @@ Severity guide:
 export const generateSavingsTips = async ({
   topCategories,
   monthlyIncome,
-  currency = "USD",
+  currency,
 }) => {
   const income = Number(monthlyIncome || 0);
   const categories = topCategories || [];
@@ -218,7 +224,8 @@ Return ONLY valid JSON (no markdown):
 }
 
 Provide exactly 4 tips.
-Each tip should reference an actual category from the data and include a realistic monthly savings estimate.`;
+Each tip should reference an actual category from the data and include a realistic monthly savings estimate.
+Use only the provided currency (${currency}) for all money values.`;
 
   try {
     const response = await ai.models.generateContent({
@@ -241,10 +248,7 @@ Each tip should reference an actual category from the data and include a realist
   }
 };
 
-export const analyzeTransactionList = async ({
-  transactions,
-  currency = "USD",
-}) => {
+export const analyzeTransactionList = async ({ transactions, currency }) => {
   const formatDate = (d) => {
     if (!d) return "";
 
@@ -303,7 +307,7 @@ Return ONLY valid JSON (no markdown):
   }
 };
 
-export const analyzeBudgetList = async ({ budgets, currency = "USD" }) => {
+export const analyzeBudgetList = async ({ budgets, currency }) => {
   const lines = (budgets || [])
     .map((b) => {
       const spent = parseFloat(b.spent);

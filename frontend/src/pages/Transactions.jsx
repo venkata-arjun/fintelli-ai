@@ -31,7 +31,8 @@ const Transactions = () => {
 
     const fetchData = async () => {
         const params = { limit: 2000 };
-        if (filters.search) params.search = filters.search;
+        const search = filters.search.trim();
+        if (search) params.search = search;
         if (filters.categoryId) params.categoryId = filters.categoryId;
         try {
             setLoading(true);
@@ -244,14 +245,14 @@ const Transactions = () => {
 
             <div className="bg-white rounded-3xl border border-slate-100 p-5">
                 {!analysis ? (
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="flex items-start sm:items-center gap-3 min-w-0">
                             <div className="h-10 w-10 rounded-xl bg-linear-to-br from-violet-400 to-violet-600 flex items-center justify-center shrink-0">
                                 <Sparkles size={18} className="text-white" />
                             </div>
                             <div className="min-w-0">
-                                <h3 className="font-semibold text-slate-900">AI Spending Insight</h3>
-                                <p className="text-sm text-slate-500 truncate">
+                                <h3 className="font-semibold text-slate-900">AI Spending Insights</h3>
+                                <p className="text-sm text-slate-500">
                                     Get a quick analysis of the {transactions.length} transaction{transactions.length !== 1 ? 's' : ''} in this view
                                 </p>
                             </div>
@@ -260,6 +261,7 @@ const Transactions = () => {
                             onClick={generateInsight}
                             disabled={analysisLoading || transactions.length === 0}
                             size="sm"
+                            className="self-end sm:self-auto whitespace-nowrap"
                         >
                             {analysisLoading ? (
                                 <>
@@ -275,20 +277,31 @@ const Transactions = () => {
                         </Button>
                     </div>
                 ) : (
-                    <div className="flex gap-4">
-                        <div className="h-10 w-10 rounded-xl bg-linear-to-br from-violet-400 to-violet-600 flex items-center justify-center shrink-0">
-                            <Sparkles size={18} className="text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-2">
-                                <h3 className="font-semibold text-slate-900">AI Spending Insight</h3>
-                                {analysis.highlight && (
-                                    <span className="inline-flex items-center bg-violet-50 text-violet-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                        {analysis.highlight}
-                                    </span>
-                                )}
+                    <div className="space-y-4">
+                        <div className="flex items-start gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-linear-to-br from-violet-400 to-violet-600 flex items-center justify-center shrink-0">
+                                <Sparkles size={18} className="text-white" />
                             </div>
-                            <p className="text-sm text-slate-700 leading-relaxed">{analysis.insight}</p>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                    <h3 className="font-semibold text-slate-900 leading-snug">AI Spending Insights</h3>
+                                    {analysis.highlight && (
+                                        <span className="inline-flex w-fit max-w-full items-center bg-violet-50 text-violet-700 text-xs font-medium px-2.5 py-0.5 rounded-full leading-snug whitespace-normal">
+                                            {analysis.highlight}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setAnalysis(null)}
+                                className="text-slate-400 hover:text-slate-600 shrink-0 p-1"
+                                title="Dismiss"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-sm text-slate-700 leading-relaxed break-words">{analysis.insight}</p>
                             <button
                                 onClick={generateInsight}
                                 disabled={analysisLoading}
@@ -297,13 +310,6 @@ const Transactions = () => {
                                 {analysisLoading ? 'Re-analyzing...' : 'Re-analyze'}
                             </button>
                         </div>
-                        <button
-                            onClick={() => setAnalysis(null)}
-                            className="text-slate-400 hover:text-slate-600 shrink-0 p-1"
-                            title="Dismiss"
-                        >
-                            <X size={16} />
-                        </button>
                     </div>
                 )}
             </div>

@@ -10,7 +10,66 @@ const getUserCurrency = async (userId) => {
     userId,
   ]);
 
-  return result.rows[0]?.currency || "USD";
+  return result.rows[0]?.currency || "INR";
+};
+
+const deriveRecommendationSavings = (content, expenseBreakdown) => {
+  const categoryAmounts = new Map(
+    (expenseBreakdown || []).map((b) => [
+      String(b.category || "").trim().toLowerCase(),
+      Number(b.amount || 0),
+    ]),
+  );
+  const remainingByCategory = new Map(categoryAmounts);
+
+  const recommendations = Array.isArray(content?.recommendations)
+    ? content.recommendations.map((r) => {
+        const category = String(r.category || "").trim();
+        const categoryKey = category.toLowerCase();
+        const remainingCategoryAmount =
+          remainingByCategory.get(categoryKey) || 0;
+        const rawSavings = Number(r.estimatedSavings);
+        const estimatedSavings =
+          remainingCategoryAmount > 0 &&
+          Number.isFinite(rawSavings) &&
+          rawSavings > 0
+            ? Math.min(
+                Math.round(rawSavings),
+                Math.floor(remainingCategoryAmount),
+              )
+            : 0;
+
+        remainingByCategory.set(
+          categoryKey,
+          Math.max(0, remainingCategoryAmount - estimatedSavings),
+        );
+
+        return {
+          ...r,
+          estimatedSavings,
+        };
+      })
+    : [];
+
+  const estimatedAdditionalSavings = recommendations.reduce(
+    (sum, r) => sum + r.estimatedSavings,
+    0,
+  );
+
+  const normalized = {
+    ...content,
+    recommendations,
+  };
+
+  delete normalized.estimatedMonthlySavings;
+
+  if (estimatedAdditionalSavings > 0) {
+    normalized.estimatedAdditionalSavings = estimatedAdditionalSavings;
+  } else {
+    delete normalized.estimatedAdditionalSavings;
+  }
+
+  return normalized;
 };
 
 export const getInsights = async (req, res) => {
@@ -81,15 +140,16 @@ const buildMonthlyInsight = async (userId) => {
     totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome) * 100 : 0;
 
   const currency = await getUserCurrency(userId);
+  const expenseBreakdown = (row.breakdown || []).map((b) => ({
+    category: b.category,
+    amount: parseFloat(b.amount || 0),
+  }));
 
   const content = await generateMonthlyInsight({
     totalIncome,
     totalExpenses,
     savingsRate,
-    expenseBreakdown: (row.breakdown || []).map((b) => ({
-      category: b.category,
-      amount: parseFloat(b.amount || 0),
-    })),
+    expenseBreakdown,
     previousMonths: (row.trend || []).map((t) => ({
       month: t.month,
       income: parseFloat(t.income || 0),
@@ -110,7 +170,7 @@ const buildMonthlyInsight = async (userId) => {
   )}-${String(now.getDate()).padStart(2, "0")}`;
 
   return {
-    content,
+    content: deriveRecommendationSavings(content, expenseBreakdown),
     periodStart,
     periodEnd,
   };

@@ -36,9 +36,18 @@ export const getTransactions = async (req, res) => {
     values.push(type);
   }
 
-  if (search) {
-    conditions.push(`(t.description ILIKE $${idx} OR t.notes ILIKE $${idx})`);
-    values.push(`%${search}%`);
+  const normalizedSearch = search?.trim();
+
+  if (normalizedSearch) {
+    conditions.push(`(
+      t.description ILIKE $${idx}
+      OR t.notes ILIKE $${idx}
+      OR c.name ILIKE $${idx}
+      OR t.type ILIKE $${idx}
+      OR t.amount::text ILIKE $${idx}
+      OR t.transaction_date::text ILIKE $${idx}
+    )`);
+    values.push(`%${normalizedSearch}%`);
     idx++;
   }
 

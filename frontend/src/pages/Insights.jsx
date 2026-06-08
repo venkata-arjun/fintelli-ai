@@ -11,7 +11,8 @@ import {
 import toast from 'react-hot-toast';
 import api from '../lib/axios.js';
 import { API_PATHS } from '../utils/apiPaths.js';
-import { timeAgo } from '../utils/format.js';
+import { formatCurrency, timeAgo } from '../utils/format.js';
+import { useAuth } from '../context/AuthContext.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import Spinner from '../components/Spinner.jsx';
 import InsightCard from '../components/InsightCard.jsx';
@@ -48,6 +49,8 @@ const ActionCard = ({ title, description, icon: Icon, accentGradient, accentText
 );
 
 const Insights = () => {
+    const { user } = useAuth();
+    const currency = user?.currency || 'USD';
     const [insights, setInsights] = useState([]);
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState(null);
@@ -83,19 +86,19 @@ const Insights = () => {
 
     const stats = useMemo(() => {
         const latestMonthly = insights.find((i) => i.insight_type === 'monthly_summary');
-        const latestTips = insights.find((i) => i.insight_type === 'savings_tips');
         const monthly = latestMonthly?.content_json;
-        const tips = latestTips?.content_json;
-        const potentialSavings =
-            tips?.tips?.reduce((sum, t) => sum + (Number(t.estimatedSavings) || 0), 0) || 0;
+        const savingsOpportunity =
+            typeof monthly?.estimatedAdditionalSavings === 'number'
+                ? monthly.estimatedAdditionalSavings
+                : null;
 
         return {
             total: insights.length,
             healthScore: monthly?.healthScore ?? null,
-            potentialSavings,
+            savingsOpportunity,
             lastAt: insights[0]?.created_at || null,
             latestMonthlyAt: latestMonthly?.created_at,
-            latestTipsAt: latestTips?.created_at,
+            latestTipsAt: insights.find((i) => i.insight_type === 'savings_tips')?.created_at,
         };
     }, [insights]);
 
@@ -117,27 +120,29 @@ const Insights = () => {
                 </p>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                 <KpiCard
-                    label="Insights generated"
+                    label="Generated"
                     value={stats.total}
                     icon={Sparkles}
                     accent="violet"
                 />
                 <KpiCard
-                    label="Health score"
+                    label="Health Score"
                     value={stats.healthScore != null ? `${stats.healthScore}/100` : '—'}
                     icon={Activity}
                     accent={healthAccent}
                 />
+                {stats.savingsOpportunity > 0 && (
+                    <KpiCard
+                        label="Savings Opportunity"
+                        value={`${formatCurrency(stats.savingsOpportunity, currency).replace(/\.00$/, '')}/mo`}
+                        icon={Wallet}
+                        accent="orange"
+                    />
+                )}
                 <KpiCard
-                    label="Potential savings"
-                    value={stats.potentialSavings > 0 ? `$${stats.potentialSavings.toFixed(0)}/mo` : '—'}
-                    icon={Wallet}
-                    accent="orange"
-                />
-                <KpiCard
-                    label="Last analysis"
+                    label="Last Analysis"
                     value={stats.lastAt ? timeAgo(stats.lastAt) : '—'}
                     icon={Clock}
                     accent="blue"
