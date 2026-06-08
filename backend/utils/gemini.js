@@ -1,17 +1,4 @@
-import dotenv from "dotenv";
-import { GoogleGenAI } from "@google/genai";
-
-dotenv.config();
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
-
-if (!process.env.GEMINI_API_KEY) {
-  console.error(
-    "⚠️ WARNING: GEMINI_API_KEY is not set. AI features will not work.",
-  );
-}
+import { generateGeminiContent } from "./geminiService.js";
 
 const stripMarkdown = (text) => {
   let cleaned = text.trim();
@@ -23,6 +10,25 @@ const stripMarkdown = (text) => {
   }
 
   return cleaned.trim();
+};
+
+const generateGeminiJson = async ({ prompt, operation, invalidLogLabel }) => {
+  const response = await generateGeminiContent(
+    {
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    },
+    { operation },
+  );
+
+  const cleaned = stripMarkdown(response.text || "");
+
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    console.error(`Invalid Gemini JSON (${invalidLogLabel}):`, cleaned);
+    throw new Error("Gemini returned invalid JSON.");
+  }
 };
 
 export const generateMonthlyInsight = async ({
@@ -101,20 +107,11 @@ Constraints:
 - Tone: friendly but honest.`;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
+    return await generateGeminiJson({
+      prompt,
+      operation: "monthly insight",
+      invalidLogLabel: "monthly insight",
     });
-
-    const text = response.text;
-    const cleaned = stripMarkdown(text);
-
-    try {
-      return JSON.parse(cleaned);
-    } catch {
-      console.error("Invalid Gemini JSON (monthly insight):", cleaned);
-      throw new Error("Gemini returned invalid JSON.");
-    }
   } catch (error) {
     console.error("Gemini API error (monthly insight):", error);
     throw new Error("Failed to generate monthly insight. Please try again.");
@@ -162,20 +159,11 @@ Severity guide:
 - critical: over 100% spent`;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
+    return await generateGeminiJson({
+      prompt,
+      operation: "budget alert",
+      invalidLogLabel: "budget alert",
     });
-
-    const text = response.text;
-    const cleaned = stripMarkdown(text);
-
-    try {
-      return JSON.parse(cleaned);
-    } catch {
-      console.error("Invalid Gemini JSON (budget alert):", cleaned);
-      throw new Error("Gemini returned invalid JSON.");
-    }
   } catch (error) {
     console.error("Gemini API error (budget alert):", error);
     throw new Error("Failed to generate budget alert.");
@@ -228,20 +216,11 @@ Each tip should reference an actual category from the data and include a realist
 Use only the provided currency (${currency}) for all money values.`;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
+    return await generateGeminiJson({
+      prompt,
+      operation: "savings tips",
+      invalidLogLabel: "savings tips",
     });
-
-    const text = response.text;
-    const cleaned = stripMarkdown(text);
-
-    try {
-      return JSON.parse(cleaned);
-    } catch {
-      console.error("Invalid Gemini JSON (savings tips):", cleaned);
-      throw new Error("Gemini returned invalid JSON.");
-    }
   } catch (error) {
     console.error("Gemini API error (savings tips):", error);
     throw new Error("Failed to generate savings tips.");
@@ -287,20 +266,11 @@ Return ONLY valid JSON (no markdown):
 }`;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
+    return await generateGeminiJson({
+      prompt,
+      operation: "analyze transactions",
+      invalidLogLabel: "analyze transactions",
     });
-
-    const text = response.text;
-    const cleaned = stripMarkdown(text);
-
-    try {
-      return JSON.parse(cleaned);
-    } catch {
-      console.error("Invalid Gemini JSON (analyze transactions):", cleaned);
-      throw new Error("Gemini returned invalid JSON.");
-    }
   } catch (error) {
     console.error("Gemini API error (analyze transactions):", error);
     throw new Error("Failed to analyze transactions.");
@@ -344,20 +314,11 @@ Return ONLY valid JSON (no markdown):
 }`;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
+    return await generateGeminiJson({
+      prompt,
+      operation: "analyze budgets",
+      invalidLogLabel: "analyze budgets",
     });
-
-    const text = response.text;
-    const cleaned = stripMarkdown(text);
-
-    try {
-      return JSON.parse(cleaned);
-    } catch {
-      console.error("Invalid Gemini JSON (analyze budgets):", cleaned);
-      throw new Error("Gemini returned invalid JSON.");
-    }
   } catch (error) {
     console.error("Gemini API error (analyze budgets):", error);
     throw new Error("Failed to analyze budgets.");
