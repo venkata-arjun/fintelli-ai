@@ -28,8 +28,8 @@ const ViewToggle = ({ view, onChange }) => (
     className="inline-flex items-center bg-slate-100 rounded-xl p-1 gap-1"
   >
     {[
-      { id: "monthly", label: "Monthly", Icon: CalendarDays },
-      { id: "overall", label: "Overall", Icon: LayoutGrid },
+      { id: "monthly", label: "This Month", Icon: CalendarDays },
+      { id: "overall", label: "All Time", Icon: LayoutGrid },
     ].map(({ id, label, Icon }) => {
       const active = view === id;
       return (
@@ -137,8 +137,8 @@ const Dashboard = () => {
   // ── income / expense labels ──
   const incomeLabel = view === "monthly" ? "Income" : "Total Income";
   const expenseLabel = view === "monthly" ? "Expenses" : "Total Expenses";
-  const balanceLabel = view === "monthly" ? "Balance" : "Net Balance";
-  const savingsLabel = view === "monthly" ? "Savings Rate" : "Avg Savings Rate";
+  const balanceLabel = view === "monthly" ? "Net Balance" : "Net Balance";
+  const savingsLabel = view === "monthly" ? "Savings Rate" : "Savings Rate";
 
   const incomeValue =
     view === "monthly" ? summary.incomeThisMonth : summary.totalIncome;
@@ -160,7 +160,7 @@ const Dashboard = () => {
           <p className="text-sm text-slate-500 mt-1.5">
             {view === "monthly"
               ? "An overview of your finances this month"
-              : "Cumulative overview across all your transactions"}
+              : "An overview of all your transactions"}
           </p>
         </div>
         <div className="self-start sm:self-center mt-0.5">
