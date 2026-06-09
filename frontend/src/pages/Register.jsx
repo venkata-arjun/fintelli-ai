@@ -80,7 +80,7 @@ const Register = () => {
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 text-slate-900 text-sm focus:outline-none transition"
-                  placeholder="Alex"
+                  placeholder="Enter your name"
                 />
               </div>
 
@@ -94,7 +94,7 @@ const Register = () => {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 text-slate-900 text-sm focus:outline-none transition"
-                  placeholder="you@example.com"
+                  placeholder="Enter your email"
                 />
               </div>
 
@@ -112,7 +112,7 @@ const Register = () => {
                       setForm({ ...form, password: e.target.value })
                     }
                     className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 pr-12 text-slate-900 text-sm focus:outline-none transition"
-                    placeholder="At least 6 characters"
+                    placeholder="Create a password (min. 6 characters)"
                   />
                   <button
                     type="button"
@@ -137,7 +137,7 @@ const Register = () => {
                     setForm({ ...form, confirmPassword: e.target.value })
                   }
                   className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 text-slate-900 text-sm focus:outline-none transition"
-                  placeholder="Confirm password"
+                  placeholder="Re-enter your password"
                 />
               </div>
 

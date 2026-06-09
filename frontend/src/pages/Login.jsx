@@ -53,7 +53,7 @@ const Login = () => {
             <h2 className="text-4xl font-bold text-slate-900 tracking-tight mb-2">
               Sign In
             </h2>
-            <p className="text-slate-500 mb-10">Please login to continue</p>
+            <p className="text-slate-500 mb-10">Please sign in to continue</p>
 
             <form onSubmit={onSubmit} className="space-y-5">
               {/* Form fields remain the same */}
@@ -67,7 +67,7 @@ const Login = () => {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 text-slate-900 text-sm focus:outline-none transition"
-                  placeholder="you@example.com"
+                  placeholder="Enter your email"
                 />
               </div>
 
@@ -84,7 +84,7 @@ const Login = () => {
                       setForm({ ...form, password: e.target.value })
                     }
                     className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 pr-12 text-slate-900 text-sm focus:outline-none transition"
-                    placeholder="••••••••"
+                    placeholder="Enter your password"
                   />
                   <button
                     type="button"
@@ -114,12 +114,12 @@ const Login = () => {
             </form>
 
             <p className="text-center mt-8 text-sm text-slate-500">
-              No Account Yet?{" "}
+              Don't have an account?{" "}
               <Link
                 to="/register"
                 className="text-violet-600 font-semibold hover:text-violet-700 transition"
               >
-                Get Yours Now
+                Create one
               </Link>
             </p>
           </div>
