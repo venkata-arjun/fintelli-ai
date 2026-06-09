@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion"; // Import motion
 import toast from "react-hot-toast";
 import { Wallet, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -28,7 +29,12 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-white">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen flex bg-white"
+    >
       <div className="flex-1 flex flex-col px-6 sm:px-10 lg:px-14 py-8 order-1">
         <div className="flex justify-start items-center gap-2">
           <div className="h-9 w-9 rounded-xl bg-linear-to-br from-violet-400 to-violet-600 flex items-center justify-center">
@@ -37,7 +43,12 @@ const Login = () => {
           <span className="font-bold text-xl text-slate-900">Fintelli AI</span>
         </div>
 
-        <div className="flex-1 flex items-center justify-center py-10">
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="flex-1 flex items-center justify-center py-10"
+        >
           <div className="w-full max-w-md">
             <h2 className="text-4xl font-bold text-slate-900 tracking-tight mb-2">
               Sign In
@@ -45,6 +56,7 @@ const Login = () => {
             <p className="text-slate-500 mb-10">Please login to continue</p>
 
             <form onSubmit={onSubmit} className="space-y-5">
+              {/* Form fields remain the same */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">
                   Email
@@ -88,7 +100,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full inline-flex items-center justify-center gap-2 bg-linear-to-br from-violet-400 to-violet-600  active:bg-violet-800 text-white font-semibold py-4 rounded-2xl transition shadow-lg shadow-violet-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full inline-flex items-center justify-center gap-2 bg-linear-to-br from-violet-400 to-violet-600 active:bg-violet-800 text-white font-semibold py-4 rounded-2xl transition shadow-lg shadow-violet-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -111,7 +123,7 @@ const Login = () => {
               </Link>
             </p>
           </div>
-        </div>
+        </motion.div>
 
         <div className="flex justify-start gap-6 text-xs text-slate-500">
           <a className="hover:text-slate-900 transition cursor-pointer">
@@ -130,7 +142,7 @@ const Login = () => {
           subheadline="Your AI-Powered Financial Companion"
         />
       </div>
-    </div>
+    </motion.div>
   );
 };
 

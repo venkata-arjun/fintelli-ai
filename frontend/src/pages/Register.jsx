@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion"; // Import motion
 import toast from "react-hot-toast";
 import { Wallet, Eye, EyeOff, ChevronDown } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -44,8 +45,14 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-white">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="min-h-screen flex bg-white"
+    >
       <div className="w-full lg:w-[40%] flex flex-col px-6 sm:px-10 lg:px-12 py-8 order-1">
+        {/* ... existing content remains exactly the same ... */}
         <div className="flex justify-start items-center gap-2">
           <div className="h-9 w-9 rounded-xl bg-linear-to-br from-violet-400 to-violet-600 flex items-center justify-center">
             <Wallet size={18} className="text-white" />
@@ -63,6 +70,7 @@ const Register = () => {
             </p>
 
             <form onSubmit={onSubmit} className="space-y-5">
+              {/* ... form fields ... */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">
                   Name
@@ -165,8 +173,7 @@ const Register = () => {
               >
                 {loading ? (
                   <>
-                    <Spinner size="sm" />
-                    Creating account...
+                    <Spinner size="sm" /> Creating account...
                   </>
                 ) : (
                   "Create Account"
@@ -200,7 +207,7 @@ const Register = () => {
       <div className="hidden lg:flex lg:w-[60%] order-2">
         <AuthHero headline="Begin" subheadline="your financial journey" />
       </div>
-    </div>
+    </motion.div>
   );
 };
 
