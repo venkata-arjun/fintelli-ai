@@ -7,6 +7,8 @@ import {
   PiggyBank,
   ArrowRight,
   Target,
+  CalendarDays,
+  LayoutGrid,
 } from "lucide-react";
 import api from "../lib/axios.js";
 import { API_PATHS } from "../utils/apiPaths.js";
@@ -18,12 +20,53 @@ import MonthlyTrendChart from "../components/charts/MonthlyTrendChart.jsx";
 import CategoryBreakdownChart from "../components/charts/CategoryBreakdownChart.jsx";
 import Spinner from "../components/Spinner.jsx";
 
+// ─── Toggle pill ────────────────────────────────────────────────────────────
+const ViewToggle = ({ view, onChange }) => (
+  <div
+    role="group"
+    aria-label="Dashboard time range"
+    className="inline-flex items-center bg-slate-100 rounded-xl p-1 gap-1"
+  >
+    {[
+      { id: "monthly", label: "Monthly", Icon: CalendarDays },
+      { id: "overall", label: "Overall", Icon: LayoutGrid },
+    ].map(({ id, label, Icon }) => {
+      const active = view === id;
+      return (
+        <button
+          key={id}
+          onClick={() => onChange(id)}
+          aria-pressed={active}
+          className={[
+            "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400",
+            active
+              ? "bg-white text-violet-700 shadow-sm ring-1 ring-slate-200"
+              : "text-slate-500 hover:text-slate-700",
+          ].join(" ")}
+        >
+          <Icon size={14} strokeWidth={active ? 2.2 : 1.8} />
+          {label}
+        </button>
+      );
+    })}
+  </div>
+);
+
+// ─── Main component ──────────────────────────────────────────────────────────
 const Dashboard = () => {
   const { user } = useAuth();
   const currency = user?.currency || "INR";
-  const [summary, setSummary] = useState(null);
-  const [trend, setTrend] = useState([]);
-  const [breakdown, setBreakdown] = useState([]);
+
+  // ── view mode ──
+  const [view, setView] = useState("monthly"); // "monthly" | "overall"
+
+  // ── data ──
+  const [monthlySummary, setMonthlySummary] = useState(null);
+  const [overallSummary, setOverallSummary] = useState(null);
+  const [monthlyTrend, setMonthlyTrend] = useState([]);
+  const [overallTrend, setOverallTrend] = useState([]);
+  const [monthlyBreakdown, setMonthlyBreakdown] = useState([]);
+  const [overallBreakdown, setOverallBreakdown] = useState([]);
   const [recent, setRecent] = useState([]);
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,16 +74,36 @@ const Dashboard = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [s, t, b, r, bd] = await Promise.all([
+        const [ms, os, mt, ot, mb, ob, r, bd] = await Promise.all([
           api.get(API_PATHS.DASHBOARD.SUMMARY),
+
+          api.get(API_PATHS.DASHBOARD.OVERALL_SUMMARY),
+
           api.get(API_PATHS.DASHBOARD.MONTHLY_TREND),
+
+          api.get(API_PATHS.DASHBOARD.MONTHLY_TREND, {
+            params: { period: "overall" },
+          }),
+
           api.get(API_PATHS.DASHBOARD.CATEGORY_BREAKDOWN),
-          api.get(API_PATHS.TRANSACTIONS.LIST, { params: { limit: 5 } }),
+
+          api.get(API_PATHS.DASHBOARD.CATEGORY_BREAKDOWN, {
+            params: { period: "overall" },
+          }),
+
+          api.get(API_PATHS.TRANSACTIONS.LIST, {
+            params: { limit: 5 },
+          }),
+
           api.get(API_PATHS.BUDGETS.LIST),
         ]);
-        setSummary(s.data);
-        setTrend(t.data);
-        setBreakdown(b.data);
+
+        setMonthlySummary(ms.data);
+        setOverallSummary(os.data);
+        setMonthlyTrend(mt.data);
+        setOverallTrend(ot.data);
+        setMonthlyBreakdown(mb.data);
+        setOverallBreakdown(ob.data);
         setRecent(r.data);
         setBudgets(bd.data);
       } catch (err) {
@@ -52,13 +115,18 @@ const Dashboard = () => {
     load();
   }, []);
 
+  // ── derived values based on active view ──
+  const summary = view === "monthly" ? monthlySummary : overallSummary;
+  const trend = view === "monthly" ? monthlyTrend : overallTrend;
+  const breakdown = view === "monthly" ? monthlyBreakdown : overallBreakdown;
+
   const totalSpent = budgets.reduce((sum, b) => sum + parseFloat(b.spent), 0);
   const totalBudget = budgets.reduce((sum, b) => sum + parseFloat(b.amount), 0);
   const aggPct = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
   const aggColor =
     aggPct >= 100 ? "#F43F5E" : aggPct >= 70 ? "#F59E0B" : "#10B981";
 
-  if (loading || !summary) {
+  if (loading || !monthlySummary || !overallSummary) {
     return (
       <div className="flex justify-center py-16">
         <Spinner size="lg" />
@@ -66,70 +134,111 @@ const Dashboard = () => {
     );
   }
 
+  // ── income / expense labels ──
+  const incomeLabel = view === "monthly" ? "Income" : "Total Income";
+  const expenseLabel = view === "monthly" ? "Expenses" : "Total Expenses";
+  const balanceLabel = view === "monthly" ? "Balance" : "Net Balance";
+  const savingsLabel = view === "monthly" ? "Savings Rate" : "Avg Savings Rate";
+
+  const incomeValue =
+    view === "monthly" ? summary.incomeThisMonth : summary.totalIncome;
+  const expenseValue =
+    view === "monthly" ? summary.expenseThisMonth : summary.totalExpense;
+  const balanceValue =
+    view === "monthly"
+      ? summary.balance
+      : (summary.netBalance ?? summary.balance);
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-          Dashboard
-        </h1>
-        <p className="text-sm text-slate-500 mt-1.5">
-          An overview of your finances this month
-        </p>
+      {/* ── Header row ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+            Dashboard
+          </h1>
+          <p className="text-sm text-slate-500 mt-1.5">
+            {view === "monthly"
+              ? "An overview of your finances this month"
+              : "Cumulative overview across all your transactions"}
+          </p>
+        </div>
+        <div className="self-start sm:self-center mt-0.5">
+          <ViewToggle view={view} onChange={setView} />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      {/* ── KPI cards ── */}
+      {/* Animated wrapper: key forces re-mount / fade when view changes */}
+      <div
+        key={view}
+        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 animate-fade-in"
+        style={{ animation: "fadeSlideUp 0.25s ease both" }}
+      >
         <KpiCard
-          label="Balance"
-          value={formatCurrency(summary.balance, currency)}
+          label={balanceLabel}
+          value={formatCurrency(balanceValue, currency)}
           icon={Wallet}
           accent="violet"
         />
         <KpiCard
-          label="Income"
-          value={formatCurrency(summary.incomeThisMonth, currency)}
-          delta={summary.incomeDelta}
+          label={incomeLabel}
+          value={formatCurrency(incomeValue, currency)}
+          delta={view === "monthly" ? summary.incomeDelta : undefined}
           icon={TrendingUp}
           accent="orange"
         />
         <KpiCard
-          label="Expenses"
-          value={formatCurrency(summary.expenseThisMonth, currency)}
-          delta={summary.expenseDelta}
+          label={expenseLabel}
+          value={formatCurrency(expenseValue, currency)}
+          delta={view === "monthly" ? summary.expenseDelta : undefined}
           icon={TrendingDown}
           accent="rose"
         />
         <KpiCard
-          label="Savings Rate"
+          label={savingsLabel}
           value={`${summary.savingsRate.toFixed(1)}%`}
           icon={PiggyBank}
           accent="blue"
         />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      {/* ── Charts row ── */}
+      <div
+        key={`charts-${view}`}
+        className="grid grid-cols-1 xl:grid-cols-3 gap-6"
+        style={{ animation: "fadeSlideUp 0.3s ease both" }}
+      >
         <div className="xl:col-span-2 bg-white rounded-3xl border border-slate-100 p-6">
           <div className="mb-5">
             <h2 className="text-lg font-bold text-slate-900 tracking-tight">
-              Monthly Trend
+              {view === "monthly" ? "Monthly Trend" : "All-time Trend"}
             </h2>
             <p className="text-xs text-slate-500 mt-1">
-              Income vs expenses, last 6 months
+              {view === "monthly"
+                ? "Income vs expenses, last 6 months"
+                : "Income vs expenses across all recorded months"}
             </p>
           </div>
           <MonthlyTrendChart data={trend} currency={currency} />
         </div>
+
         <div className="bg-white rounded-3xl border border-slate-100 p-6">
           <div className="mb-5">
             <h2 className="text-lg font-bold text-slate-900 tracking-tight">
               Top Categories
             </h2>
-            <p className="text-xs text-slate-500 mt-1">Spending this month</p>
+            <p className="text-xs text-slate-500 mt-1">
+              {view === "monthly" ? "Spending this month" : "Spending all time"}
+            </p>
           </div>
           <CategoryBreakdownChart data={breakdown} currency={currency} />
         </div>
       </div>
 
+      {/* ── Bottom row: Recent transactions + Budget status ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Recent transactions */}
         <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-100 p-6">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-900 tracking-tight">
@@ -143,6 +252,7 @@ const Dashboard = () => {
               <ArrowRight size={14} />
             </Link>
           </div>
+
           {recent.length === 0 ? (
             <p className="text-sm text-slate-500 py-6 text-center">
               No transactions yet.
@@ -171,7 +281,11 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <span
-                    className={`text-sm font-bold shrink-0 ${t.type === "income" ? "text-emerald-600" : "text-orange-500"}`}
+                    className={`text-sm font-bold shrink-0 ${
+                      t.type === "income"
+                        ? "text-emerald-600"
+                        : "text-orange-500"
+                    }`}
                   >
                     {t.type === "income" ? "+" : "-"}
                     {formatCurrency(t.amount, currency)}
@@ -182,6 +296,7 @@ const Dashboard = () => {
           )}
         </div>
 
+        {/* Budget status */}
         <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-100 p-6">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-900 tracking-tight">
@@ -235,7 +350,7 @@ const Dashboard = () => {
                 </div>
                 <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full rounded-full transition-all"
+                    className="h-full rounded-full transition-all duration-500"
                     style={{
                       width: `${Math.min(aggPct, 100)}%`,
                       backgroundColor: aggColor,
@@ -265,7 +380,7 @@ const Dashboard = () => {
                       </div>
                       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full transition-all"
+                          className="h-full rounded-full transition-all duration-500"
                           style={{ width: `${pct}%`, backgroundColor: color }}
                         />
                       </div>
@@ -277,6 +392,14 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+
+      {/* ── Keyframe animation (injected once) ── */}
+      <style>{`
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0);  }
+        }
+      `}</style>
     </div>
   );
 };

@@ -1,5 +1,3 @@
-import { TrendingUp, TrendingDown } from "lucide-react";
-
 const gradients = {
   violet: "from-violet-400 to-violet-600",
   orange: "from-orange-400 to-orange-600",
@@ -10,9 +8,7 @@ const gradients = {
   slate: "from-slate-400 to-slate-600",
 };
 
-const KpiCard = ({ label, value, delta, icon: Icon, accent = "slate" }) => {
-  const hasDelta = delta != null && Number.isFinite(delta);
-  const positive = hasDelta && delta >= 0;
+const KpiCard = ({ label, value, icon: Icon, accent = "slate" }) => {
   const gradient = gradients[accent] || gradients.slate;
 
   return (
@@ -28,21 +24,9 @@ const KpiCard = ({ label, value, delta, icon: Icon, accent = "slate" }) => {
       <div className="flex-1 min-w-0">
         <p className="text-sm text-slate-500 truncate">{label}</p>
 
-        {/* Wrapped in a flex container that allows wrap for very long content */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
-          <h3 className="text-2xl md:text-[2rem] font-bold text-slate-900 leading-none break-all">
-            {value}
-          </h3>
-
-          {hasDelta && (
-            <span
-              className={`inline-flex items-center gap-0.5 text-xs font-semibold shrink-0 ${positive ? "text-emerald-600" : "text-rose-600"}`}
-            >
-              {positive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-              {Math.abs(delta).toFixed(1)}%
-            </span>
-          )}
-        </div>
+        <h3 className="mt-1 text-2xl md:text-[2rem] font-bold text-slate-900 leading-none break-all">
+          {value}
+        </h3>
       </div>
     </div>
   );

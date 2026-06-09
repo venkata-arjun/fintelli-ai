@@ -143,3 +143,48 @@ export const getMonthlyTrend = async (req, res) => {
     });
   }
 };
+
+export const getOverallSummary = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const { rows } = await pool.query(
+      `
+      SELECT
+        COALESCE(
+          SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END),
+          0
+        ) AS "total_income",
+
+        COALESCE(
+          SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END),
+          0
+        ) AS "total_expense"
+
+      FROM transactions
+      WHERE user_id = $1
+      `,
+      [userId],
+    );
+
+    const totalIncome = Number(rows[0].total_income);
+    const totalExpense = Number(rows[0].total_expense);
+
+    const netBalance = totalIncome - totalExpense;
+
+    const savingsRate =
+      totalIncome > 0 ? ((netBalance / totalIncome) * 100).toFixed(1) : 0;
+
+    res.json({
+      totalIncome,
+      totalExpense,
+      netBalance,
+      savingsRate: Number(savingsRate),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to fetch overall summary",
+    });
+  }
+};
