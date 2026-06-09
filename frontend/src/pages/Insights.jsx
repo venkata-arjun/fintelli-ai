@@ -112,101 +112,107 @@ const Insights = () => {
             : 'rose';
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold text-slate-900 tracking-tight">AI Insights</h1>
-                <p className="text-sm text-slate-500 mt-1.5">
-                    Personalized financial analysis powered by Gemini — generate insights and watch your money smarter
-                </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                <KpiCard
-                    label="Generated"
-                    value={stats.total}
-                    icon={Sparkles}
-                    accent="violet"
-                />
-                <KpiCard
-                    label="Health Score"
-                    value={stats.healthScore != null ? `${stats.healthScore}/100` : '—'}
-                    icon={Activity}
-                    accent={healthAccent}
-                />
-                {stats.savingsOpportunity > 0 && (
-                    <KpiCard
-                        label="Savings Opportunity"
-                        value={`${formatCurrency(stats.savingsOpportunity, currency).replace(/\.00$/, '')}/mo`}
-                        icon={Wallet}
-                        accent="orange"
-                    />
-                )}
-                <KpiCard
-                    label="Last Analysis"
-                    value={stats.lastAt ? timeAgo(stats.lastAt) : '—'}
-                    icon={Clock}
-                    accent="blue"
-                />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <ActionCard
-                    title="Monthly Summary"
-                    description="A full breakdown of this month's income, expenses, and a personalized health score with actionable recommendations."
-                    icon={TrendingUp}
-                    accentGradient="from-violet-400 to-violet-600"
-                    accentText="text-violet-600"
-                    onClick={() => generate('monthly_summary')}
-                    generating={generating === 'monthly_summary'}
-                    lastGenerated={stats.latestMonthlyAt}
-                />
-                <ActionCard
-                    title="Savings Tips"
-                    description="Tailored, ranked ways to save money based on your top spending categories from the last 30 days."
-                    icon={Lightbulb}
-                    accentGradient="from-blue-400 to-blue-600"
-                    accentText="text-blue-600"
-                    onClick={() => generate('savings_tips')}
-                    generating={generating === 'savings_tips'}
-                    lastGenerated={stats.latestTipsAt}
-                />
-            </div>
-
-            <div>
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-bold text-slate-900 tracking-tight">Recent Analyses</h2>
-                    {!loading && insights.length > 0 && (
-                        <span className="text-xs text-slate-500">
-                            {insights.length} {insights.length === 1 ? 'analysis' : 'analyses'}
-                        </span>
-                    )}
-                </div>
-
-                {loading ? (
-                    <div className="bg-white rounded-3xl border border-slate-100 py-16 flex justify-center">
-                        <Spinner size="lg" />
-                    </div>
-                ) : insights.length === 0 ? (
-                    <div className="bg-white rounded-3xl border border-slate-100">
-                        <EmptyState
-                            icon={Sparkles}
-                            title="No insights yet"
-                            description="Generate your first AI analysis using one of the cards above."
-                        />
-                    </div>
-                ) : (
-                    <div className="space-y-3">
-                        {insights.map((i, idx) => (
-                            <InsightCard
-                                key={i.id}
-                                insight={i}
-                                defaultExpanded={idx === 0}
-                            />
-                        ))}
-                    </div>
-                )}
-            </div>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+            AI Insights
+          </h1>
+          <p className="text-sm text-slate-500 mt-1.5">
+            Get personalized money insights - Understand your spending and save
+            smarter.
+          </p>
         </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <KpiCard
+            label="Generated"
+            value={stats.total}
+            icon={Sparkles}
+            accent="violet"
+          />
+          <KpiCard
+            label="Health Score"
+            value={stats.healthScore != null ? `${stats.healthScore}/100` : "—"}
+            icon={Activity}
+            accent={healthAccent}
+          />
+          {stats.savingsOpportunity > 0 && (
+            <KpiCard
+              label="Savings Opportunity"
+              value={`${formatCurrency(stats.savingsOpportunity, currency).replace(/\.00$/, "")}/mo`}
+              icon={Wallet}
+              accent="orange"
+            />
+          )}
+          <KpiCard
+            label="Last Analysis"
+            value={stats.lastAt ? timeAgo(stats.lastAt) : "—"}
+            icon={Clock}
+            accent="blue"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ActionCard
+            title="Monthly Summary"
+            description="A full breakdown of this month's income, expenses, and a personalized health score with actionable recommendations."
+            icon={TrendingUp}
+            accentGradient="from-violet-400 to-violet-600"
+            accentText="text-violet-600"
+            onClick={() => generate("monthly_summary")}
+            generating={generating === "monthly_summary"}
+            lastGenerated={stats.latestMonthlyAt}
+          />
+          <ActionCard
+            title="Savings Tips"
+            description="Tailored, ranked ways to save money based on your top spending categories from the last 30 days."
+            icon={Lightbulb}
+            accentGradient="from-blue-400 to-blue-600"
+            accentText="text-blue-600"
+            onClick={() => generate("savings_tips")}
+            generating={generating === "savings_tips"}
+            lastGenerated={stats.latestTipsAt}
+          />
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+              Recent Analyses
+            </h2>
+            {!loading && insights.length > 0 && (
+              <span className="text-xs text-slate-500">
+                {insights.length}{" "}
+                {insights.length === 1 ? "analysis" : "analyses"}
+              </span>
+            )}
+          </div>
+
+          {loading ? (
+            <div className="bg-white rounded-3xl border border-slate-100 py-16 flex justify-center">
+              <Spinner size="lg" />
+            </div>
+          ) : insights.length === 0 ? (
+            <div className="bg-white rounded-3xl border border-slate-100">
+              <EmptyState
+                icon={Sparkles}
+                title="No insights yet"
+                description="Generate your first AI analysis using one of the cards above."
+              />
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {insights.map((i, idx) => (
+                <InsightCard
+                  key={i.id}
+                  insight={i}
+                  defaultExpanded={idx === 0}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     );
 };
 
