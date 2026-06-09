@@ -29,14 +29,47 @@ const Register = () => {
   });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const passwordsMatched =
+    form.password &&
+    form.confirmPassword &&
+    form.password === form.confirmPassword;
+
   const passwordsMatch =
     !form.confirmPassword || form.password === form.confirmPassword;
 
   const onSubmit = async (e) => {
     e.preventDefault();
 
+    const newErrors = {};
+
+    if (!form.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+
+    if (!form.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      newErrors.email = "Enter a valid email";
+    }
+
+    if (form.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
     if (form.password !== form.confirmPassword) {
-      
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
       return;
     }
 
@@ -44,7 +77,9 @@ const Register = () => {
 
     try {
       const { confirmPassword, ...payload } = form;
+
       await register(payload);
+
       toast.success("Account created!");
       navigate("/");
     } catch (err) {
@@ -86,12 +121,17 @@ const Register = () => {
                   Name
                 </label>
                 <input
-                  required
                   value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  onChange={(e) => {
+                    setForm({ ...form, name: e.target.value });
+                    setErrors({ ...errors, name: "" });
+                  }}
                   className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 text-slate-900 text-sm focus:outline-none transition"
                   placeholder="Enter your name"
                 />
+                {errors.name && (
+                  <p className="mt-2 text-xs text-red-500">{errors.name}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -99,13 +139,18 @@ const Register = () => {
                   Email
                 </label>
                 <input
-                  type="email"
-                  required
+                  type="text"
                   value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  onChange={(e) => {
+                    setForm({ ...form, email: e.target.value });
+                    setErrors({ ...errors, email: "" });
+                  }}
                   className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 text-slate-900 text-sm focus:outline-none transition"
                   placeholder="Enter your email"
                 />
+                {errors.email && (
+                  <p className="mt-2 text-xs text-red-500">{errors.email}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -115,12 +160,11 @@ const Register = () => {
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
-                    required
-                    minLength={6}
                     value={form.password}
-                    onChange={(e) =>
-                      setForm({ ...form, password: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setForm({ ...form, password: e.target.value });
+                      setErrors({ ...errors, password: "" });
+                    }}
                     className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 pr-12 text-slate-900 text-sm focus:outline-none transition"
                     placeholder="Create a password (min. 6 characters)"
                   />
@@ -133,36 +177,34 @@ const Register = () => {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="mt-2 text-xs text-red-500">{errors.password}</p>
+                )}
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">
-                  Confirm Password
-                </label>
+              <div>
+                <input
+                  type="password"
+                  value={form.confirmPassword}
+                  onChange={(e) => {
+                    setForm({ ...form, confirmPassword: e.target.value });
+                    setErrors({ ...errors, confirmPassword: "" });
+                  }}
+                  className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 text-slate-900 text-sm focus:outline-none transition"
+                  placeholder="Re-enter your password"
+                />
 
-                <div>
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    value={form.confirmPassword}
-                    onChange={(e) =>
-                      setForm({ ...form, confirmPassword: e.target.value })
-                    }
-                    className={`w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 rounded-2xl px-5 py-4 text-slate-900 text-sm focus:outline-none transition ${
-                      passwordsMatch
-                        ? "border-transparent focus:border-violet-500"
-                        : "border-red-500 focus:border-red-500"
-                    }`}
-                    placeholder="Re-enter your password"
-                  />
-
-                  {!passwordsMatch && (
-                    <p className="mt-2 text-xs text-red-500">
-                      Passwords do not match
+                {errors.confirmPassword ? (
+                  <p className="mt-2 text-xs text-red-500">
+                    {errors.confirmPassword}
+                  </p>
+                ) : (
+                  passwordsMatched && (
+                    <p className="mt-2 text-xs text-green-600">
+                      Passwords match
                     </p>
-                  )}
-                </div>
+                  )
+                )}
               </div>
 
               <div className="space-y-2">
@@ -172,9 +214,10 @@ const Register = () => {
                 <div className="relative">
                   <select
                     value={form.currency}
-                    onChange={(e) =>
-                      setForm({ ...form, currency: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setForm({ ...form, currency: e.target.value });
+                      setErrors({ ...errors, currency: "" });
+                    }}
                     className="w-full appearance-none bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 pr-12 text-slate-900 text-sm focus:outline-none transition cursor-pointer"
                   >
                     {CURRENCIES.map((c) => (
@@ -192,7 +235,7 @@ const Register = () => {
 
               <button
                 type="submit"
-                disabled={loading || !passwordsMatch}
+                disabled={loading}
                 className="w-full inline-flex items-center justify-center gap-2 bg-linear-to-br from-violet-400 to-violet-600 active:bg-violet-800 text-white font-semibold py-4 rounded-2xl transition shadow-lg shadow-violet-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? (
