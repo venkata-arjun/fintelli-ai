@@ -16,27 +16,43 @@ const TransactionTrendChart = ({ data, currency, interval = 3 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const chartWidth = Math.min(
     1800,
-    Math.max(560, data?.length ? data.length * (data.length > 45 ? 18 : 56) : 560)
+    Math.max(
+      560,
+      data?.length ? data.length * (data.length > 45 ? 18 : 56) : 560,
+    ),
   );
 
   useEffect(() => {
     const updateIsMobile = () => {
       setIsMobile(window.matchMedia("(max-width: 767px)").matches);
     };
-
     updateIsMobile();
     window.addEventListener("resize", updateIsMobile);
     return () => window.removeEventListener("resize", updateIsMobile);
   }, []);
 
-  useEffect(() => {
-    if (!isMobile || !scrollRef.current) return;
+  // Helper to format labels - Now forces the current year (2026)
+  const formatDateTime = (value, showYear = true) => {
+    if (!value || value === "Invalid Date") return "";
 
-    requestAnimationFrame(() => {
-      const el = scrollRef.current;
-      if (el) el.scrollLeft = el.scrollWidth;
+    // If input contains a year (like 2001), we want to ignore it or replace it
+    // Create a date object, then force the year to 2026
+    let date = new Date(value);
+
+    // Safety check: if date is invalid, try to parse only Month/Day
+    if (isNaN(date.getTime())) {
+      // Logic for strings like "Jul 25"
+      date = new Date(`${value} 2026`);
+    } else {
+      date.setFullYear(2026);
+    }
+
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: showYear ? "numeric" : undefined,
     });
-  }, [isMobile, chartWidth, data]);
+  };
 
   if (!data || data.length === 0) {
     return (
@@ -48,7 +64,10 @@ const TransactionTrendChart = ({ data, currency, interval = 3 }) => {
 
   return (
     <div ref={scrollRef} className="overflow-x-auto md:overflow-x-visible pb-2">
-      <div className="h-64" style={{ minWidth: isMobile ? chartWidth : "100%" }}>
+      <div
+        className="h-64"
+        style={{ minWidth: isMobile ? chartWidth : "100%" }}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
@@ -75,6 +94,8 @@ const TransactionTrendChart = ({ data, currency, interval = 3 }) => {
               tickLine={false}
               axisLine={false}
               interval={interval}
+              // Pass 'false' to hide the year on X-axis ticks for cleaner look
+              tickFormatter={(val) => formatDateTime(val, false)}
             />
             <YAxis
               tick={{ fill: "#6b7280", fontSize: 11 }}
@@ -90,6 +111,8 @@ const TransactionTrendChart = ({ data, currency, interval = 3 }) => {
                 boxShadow: "0 4px 12px rgba(107, 114, 128, 0.15)",
                 fontSize: 12,
               }}
+              // Pass 'true' to show the year in the tooltip hover
+              labelFormatter={(val) => formatDateTime(val, true)}
               formatter={(v) => formatCurrency(v, currency)}
             />
             <Legend
