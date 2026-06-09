@@ -29,12 +29,22 @@ const Register = () => {
   });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const passwordsMatch =
+    !form.confirmPassword || form.password === form.confirmPassword;
 
   const onSubmit = async (e) => {
     e.preventDefault();
+
+    if (form.password !== form.confirmPassword) {
+      
+      return;
+    }
+
     setLoading(true);
+
     try {
-      await register(form);
+      const { confirmPassword, ...payload } = form;
+      await register(payload);
       toast.success("Account created!");
       navigate("/");
     } catch (err) {
@@ -129,16 +139,30 @@ const Register = () => {
                 <label className="text-sm font-semibold text-slate-700">
                   Confirm Password
                 </label>
-                <input
-                  type="password"
-                  required
-                  value={form.confirmPassword}
-                  onChange={(e) =>
-                    setForm({ ...form, confirmPassword: e.target.value })
-                  }
-                  className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 text-slate-900 text-sm focus:outline-none transition"
-                  placeholder="Re-enter your password"
-                />
+
+                <div>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={form.confirmPassword}
+                    onChange={(e) =>
+                      setForm({ ...form, confirmPassword: e.target.value })
+                    }
+                    className={`w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 rounded-2xl px-5 py-4 text-slate-900 text-sm focus:outline-none transition ${
+                      passwordsMatch
+                        ? "border-transparent focus:border-violet-500"
+                        : "border-red-500 focus:border-red-500"
+                    }`}
+                    placeholder="Re-enter your password"
+                  />
+
+                  {!passwordsMatch && (
+                    <p className="mt-2 text-xs text-red-500">
+                      Passwords do not match
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -168,7 +192,7 @@ const Register = () => {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !passwordsMatch}
                 className="w-full inline-flex items-center justify-center gap-2 bg-linear-to-br from-violet-400 to-violet-600 active:bg-violet-800 text-white font-semibold py-4 rounded-2xl transition shadow-lg shadow-violet-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? (
