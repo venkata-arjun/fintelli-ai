@@ -120,14 +120,7 @@ const About = () => {
 
               <div className="h-px bg-gray-100" />
 
-              {/* CTA */}
-              <a
-                href="/contact"
-                className="inline-flex items-center gap-2 text-[12px] font-semibold tracking-[0.08em] uppercase text-gray-900 hover:gap-3 transition-all duration-200"
-              >
-                Get in touch
-                <ArrowRight size={13} strokeWidth={2} />
-              </a>
+              
             </div>
           </div>
 

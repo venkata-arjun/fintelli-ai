@@ -29,9 +29,7 @@ const SectionHeader = ({ label, title, subtitle }) => (
       {title}
     </h1>
     {subtitle && (
-      <p className="text-[15px] text-gray-500 leading-7 max-w-lg">
-        {subtitle}
-      </p>
+      <p className="text-[15px] text-gray-500 leading-7 max-w-lg">{subtitle}</p>
     )}
   </div>
 );
@@ -90,7 +88,7 @@ const Contact = () => {
                       Fintelli AI
                     </h3>
                     <p className="mt-1.5 text-[13px] text-gray-500 leading-6">
-                      Tirupati, Andhra Pradesh, India
+                      Bhimavaram, Andhra Pradesh, India
                     </p>
                   </div>
                 </div>
