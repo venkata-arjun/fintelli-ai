@@ -170,17 +170,17 @@ const Hero = () => {
         </p>
 
         {/* Buttons */}
-        <div className="mt-10 flex flex-row justify-center items-center gap-3">
+        <div className="mt-10 flex flex-row justify-center items-center gap-2 sm:gap-3">
           <Link
             to="/register"
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 px-7 py-3.5 text-[13px] font-semibold uppercase tracking-[0.06em] text-white shadow-md shadow-gray-300/60 transition-all duration-200 hover:bg-black hover:shadow-lg hover:shadow-gray-300/70 active:scale-[0.985]"
+            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-full bg-gray-900 px-5 sm:px-7 py-3 sm:py-3.5 text-[12px] sm:text-[13px] font-semibold uppercase tracking-[0.06em] text-white shadow-md shadow-gray-300/60 transition-all duration-200 hover:bg-black hover:shadow-lg hover:shadow-gray-300/70 active:scale-[0.985]"
           >
             Get Started
             <ArrowRight size={14} strokeWidth={2} />
           </Link>
           <Link
             to="/login"
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-7 py-3.5 text-[13px] font-semibold uppercase tracking-[0.06em] text-gray-700 shadow-sm shadow-gray-100 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 active:scale-[0.985]"
+            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-full border border-gray-200 bg-white px-5 sm:px-7 py-3 sm:py-3.5 text-[12px] sm:text-[13px] font-semibold uppercase tracking-[0.06em] text-gray-700 shadow-sm shadow-gray-100 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 active:scale-[0.985]"
           >
             Log In
           </Link>
@@ -384,17 +384,18 @@ const CTA = () => {
           dark
         />
 
-        <div className="flex flex-row items-center justify-center gap-3">
+        <div className="mt-10 flex flex-col sm:flex-row w-full max-w-md mx-auto gap-3">
           <Link
             to="/register"
-            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-white text-gray-900 text-[13px] font-semibold tracking-[0.06em] uppercase hover:bg-gray-100 active:scale-[0.985] transition-all duration-200"
+            className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 px-6 py-3.5 text-[12px] sm:text-[13px] font-semibold uppercase tracking-[0.06em] text-white transition-all duration-200 hover:bg-black"
           >
             Get Started
             <ArrowRight size={14} strokeWidth={2} />
           </Link>
+
           <Link
             to="/login"
-            className="flex-1 sm:flex-none inline-flex items-center justify-center px-7 py-3.5 rounded-full border border-white/20 text-white text-[13px] font-semibold tracking-[0.06em] uppercase hover:border-white/40 hover:bg-white/5 transition-all duration-200"
+            className="flex-1 inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-6 py-3.5 text-[12px] sm:text-[13px] font-semibold uppercase tracking-[0.06em] text-gray-700 transition-all duration-200 hover:border-gray-300 hover:text-gray-900"
           >
             Log In
           </Link>
