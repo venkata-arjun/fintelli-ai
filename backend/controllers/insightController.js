@@ -4,19 +4,23 @@ import {
   generateBudgetAlert,
   generateSavingsTips,
 } from "../utils/gemini.js";
+import { askAI } from "../utils/grokChat.js";
+
+/* ─── helpers ─── */
 
 const getUserCurrency = async (userId) => {
   const result = await pool.query("SELECT currency FROM users WHERE id = $1", [
     userId,
   ]);
-
   return result.rows[0]?.currency || "INR";
 };
 
 const deriveRecommendationSavings = (content, expenseBreakdown) => {
   const categoryAmounts = new Map(
     (expenseBreakdown || []).map((b) => [
-      String(b.category || "").trim().toLowerCase(),
+      String(b.category || "")
+        .trim()
+        .toLowerCase(),
       Number(b.amount || 0),
     ]),
   );
@@ -44,10 +48,7 @@ const deriveRecommendationSavings = (content, expenseBreakdown) => {
           Math.max(0, remainingCategoryAmount - estimatedSavings),
         );
 
-        return {
-          ...r,
-          estimatedSavings,
-        };
+        return { ...r, estimatedSavings };
       })
     : [];
 
@@ -56,11 +57,7 @@ const deriveRecommendationSavings = (content, expenseBreakdown) => {
     0,
   );
 
-  const normalized = {
-    ...content,
-    recommendations,
-  };
-
+  const normalized = { ...content, recommendations };
   delete normalized.estimatedMonthlySavings;
 
   if (estimatedAdditionalSavings > 0) {
@@ -72,19 +69,14 @@ const deriveRecommendationSavings = (content, expenseBreakdown) => {
   return normalized;
 };
 
-export const getInsights = async (req, res) => {
-  try {
-    const result = await pool.query(
-      "SELECT * FROM ai_insights WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50",
-      [req.userId],
-    );
-
-    res.json(result.rows);
-  } catch (error) {
-    console.error("GetInsights error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
+const periodDates = () => {
+  const now = new Date();
+  const periodStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  const periodEnd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  return { periodStart, periodEnd };
 };
+
+/* ─── builders ─── */
 
 const buildMonthlyInsight = async (userId) => {
   const data = await pool.query(
@@ -121,7 +113,6 @@ const buildMonthlyInsight = async (userId) => {
       GROUP BY 1
       ORDER BY 1
     )
-
     SELECT
       (SELECT income FROM current_month) AS income,
       (SELECT expense FROM current_month) AS expense,
@@ -132,10 +123,8 @@ const buildMonthlyInsight = async (userId) => {
   );
 
   const row = data.rows[0];
-
   const totalIncome = parseFloat(row.income || 0);
   const totalExpenses = parseFloat(row.expense || 0);
-
   const savingsRate =
     totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome) * 100 : 0;
 
@@ -153,26 +142,14 @@ const buildMonthlyInsight = async (userId) => {
     previousMonths: (row.trend || []).map((t) => ({
       month: t.month,
       income: parseFloat(t.income || 0),
-      expenses: parseFloat(t.expenses || 0), // Bug 1 fixed: was t.expense
+      expenses: parseFloat(t.expenses || 0),
     })),
     currency,
   });
 
-  const now = new Date();
-
-  const periodStart = `${now.getFullYear()}-${String(
-    now.getMonth() + 1,
-  ).padStart(2, "0")}-01`;
-
-  const periodEnd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
-    2,
-    "0",
-  )}-${String(now.getDate()).padStart(2, "0")}`;
-
   return {
     content: deriveRecommendationSavings(content, expenseBreakdown),
-    periodStart,
-    periodEnd,
+    ...periodDates(),
   };
 };
 
@@ -200,10 +177,8 @@ const buildBudgetAlert = async (userId, categoryId) => {
         0
       ) AS spent
     FROM budgets b
-    JOIN categories c
-      ON c.id = b.category_id
-    WHERE b.user_id = $1
-      AND b.category_id = $2
+    JOIN categories c ON c.id = b.category_id
+    WHERE b.user_id = $1 AND b.category_id = $2
     `,
     [userId, categoryId],
   );
@@ -215,7 +190,6 @@ const buildBudgetAlert = async (userId, categoryId) => {
   }
 
   const b = budgetRow.rows[0];
-
   const now = new Date();
   const daysIntoPeriod = now.getDate();
   const totalPeriodDays = new Date(
@@ -235,24 +209,9 @@ const buildBudgetAlert = async (userId, categoryId) => {
     currency,
   });
 
-  // Bug 2 fixed: return full { content, periodStart, periodEnd } shape
-  const periodStart = `${now.getFullYear()}-${String(
-    now.getMonth() + 1,
-  ).padStart(2, "0")}-01`;
-
-  const periodEnd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
-    2,
-    "0",
-  )}-${String(now.getDate()).padStart(2, "0")}`;
-
-  return {
-    content,
-    periodStart,
-    periodEnd,
-  };
+  return { content, ...periodDates() };
 };
 
-// Bug 3 fixed: buildSavingsTips was called but never defined
 const buildSavingsTips = async (userId) => {
   const data = await pool.query(
     `
@@ -295,31 +254,29 @@ const buildSavingsTips = async (userId) => {
     currency,
   });
 
-  const now = new Date();
+  return { content, ...periodDates() };
+};
 
-  const periodStart = `${now.getFullYear()}-${String(
-    now.getMonth() + 1,
-  ).padStart(2, "0")}-01`;
+/* ─── exports ─── */
 
-  const periodEnd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
-    2,
-    "0",
-  )}-${String(now.getDate()).padStart(2, "0")}`;
-
-  return {
-    content,
-    periodStart,
-    periodEnd,
-  };
+export const getInsights = async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM ai_insights WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50",
+      [req.userId],
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("GetInsights error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 export const generateInsight = async (req, res) => {
   const { type, categoryId } = req.body;
 
   if (!type) {
-    return res.status(400).json({
-      message: "Insight type is required",
-    });
+    return res.status(400).json({ message: "Insight type is required" });
   }
 
   try {
@@ -332,30 +289,37 @@ export const generateInsight = async (req, res) => {
     } else if (type === "budget_alert") {
       result = await buildBudgetAlert(req.userId, categoryId);
     } else {
-      return res.status(400).json({
-        message: "Unknown insight type",
-      });
+      return res.status(400).json({ message: "Unknown insight type" });
     }
 
     const inserted = await pool.query(
-      `INSERT INTO ai_insights (
-                user_id,
-                insight_type,
-                period_start,
-                period_end,
-                content_json
-            )
-            VALUES ($1, $2, $3, $4, $5)
-            RETURNING *`,
+      `INSERT INTO ai_insights (user_id, insight_type, period_start, period_end, content_json)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
       [req.userId, type, result.periodStart, result.periodEnd, result.content],
     );
 
     res.status(201).json(inserted.rows[0]);
   } catch (error) {
     console.error("GenerateInsight error:", error);
+    res
+      .status(error.status || 500)
+      .json({ message: error.message || "Server error" });
+  }
+};
 
-    res.status(error.status || 500).json({
-      message: error.message || "Server error",
-    });
+export const chat = async (req, res) => {
+  try {
+    const { messages, system } = req.body;
+
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "messages array is required" });
+    }
+
+    const reply = await askAI(messages, system);
+    res.json({ reply });
+  } catch (err) {
+    console.error("Groq Chat Error:", err);
+    res.status(500).json({ error: err?.message || "AI chat failed" });
   }
 };

@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion"; // Import motion
+import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { Wallet, Eye, EyeOff, ChevronDown } from "lucide-react";
+import { BarChart2, Eye, EyeOff, ChevronDown, Check } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
-import AuthHero from "../components/AuthHero.jsx";
 import Spinner from "../components/Spinner.jsx";
 
 const CURRENCIES = [
@@ -17,9 +16,16 @@ const CURRENCIES = [
   { value: "AUD", label: "AUD - Australian Dollar" },
 ];
 
+const inputClass =
+  "w-full bg-white border border-gray-200 text-gray-800 rounded-xl px-4 py-3 text-[13px] focus:outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/5 transition-all duration-200 placeholder:text-gray-400";
+
+const labelClass =
+  "text-[10.5px] font-semibold tracking-[0.14em] uppercase text-gray-400";
+
 const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -29,59 +35,39 @@ const Register = () => {
   });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const [errors, setErrors] = useState({});
 
   const passwordsMatched =
     form.password &&
     form.confirmPassword &&
     form.password === form.confirmPassword;
 
-  const passwordsMatch =
-    !form.confirmPassword || form.password === form.confirmPassword;
+  const setField = (key, val) => {
+    setForm((f) => ({ ...f, [key]: val }));
+    setErrors((e) => ({ ...e, [key]: "" }));
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-
     const newErrors = {};
 
-    if (!form.name.trim()) {
-      newErrors.name = "Name is required";
-    }
-
-    if (!form.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    if (!form.name.trim()) newErrors.name = "Name is required";
+    if (!form.email.trim()) newErrors.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       newErrors.email = "Enter a valid email";
-    }
-
-    if (form.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
-    }
-
-    if (form.password !== form.confirmPassword) {
+    if (form.password.length < 6) newErrors.password = "Minimum 6 characters";
+    if (form.password !== form.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match";
-    }
 
     setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0) {
-      return;
-    }
+    if (Object.keys(newErrors).length > 0) return;
 
     setLoading(true);
-
     try {
       const { confirmPassword, ...payload } = form;
-
       await register(payload);
-
-      toast.success("Account created!");
-      navigate("/");
+      toast.success("Account created! Please sign in.");
+      navigate("/login");
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {
@@ -94,185 +80,180 @@ const Register = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="min-h-screen flex bg-white"
+      className="min-h-screen flex flex-col bg-white"
     >
-      <div className="w-full lg:w-[40%] flex flex-col px-6 sm:px-10 lg:px-12 py-8 order-1">
-        {/* ... existing content remains exactly the same ... */}
-        <div className="flex justify-start items-center gap-2">
-          <div className="h-9 w-9 rounded-xl bg-linear-to-br from-violet-400 to-violet-600 flex items-center justify-center">
-            <Wallet size={18} className="text-white" />
-          </div>
-          <span className="font-bold text-xl text-slate-900">Fintelli AI</span>
-        </div>
+      {/* ── Top Bar ── */}
+      <div className="w-full px-5 sm:px-8 py-6 flex justify-center sm:justify-start">
+        <Link to="/" className="flex items-center gap-2.5 w-fit">
+          <span className="w-9 h-9 rounded-xl bg-gray-900 flex items-center justify-center">
+            <BarChart2 size={16} strokeWidth={1.75} className="text-white" />
+          </span>
+          <span className="font-bold text-[17px] text-gray-900">
+            Fintelli AI
+          </span>
+        </Link>
+      </div>
 
-        <div className="flex-1 flex items-center justify-center py-10">
-          <div className="w-full max-w-[380px]">
-            <h2 className="text-4xl font-bold text-slate-900 tracking-tight mb-2">
-              Sign Up
-            </h2>
-            <p className="text-slate-500 mb-10">
-              Create your account in seconds
-            </p>
+      {/* ── Centered Form ── */}
+      <div className="flex-1 flex items-center justify-center px-5 py-8 sm:px-6">
+        <div className="w-full max-w-[420px]">
+          <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3 text-center">
+            Get started
+          </p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight mb-2 text-center">
+            Create account
+          </h2>
+          <p className="text-[14px] text-gray-500 mb-10 text-center">
+            Set up your Fintelli AI account in seconds.
+          </p>
 
-            <form onSubmit={onSubmit} className="space-y-5">
-              {/* ... form fields ... */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">
-                  Name
-                </label>
+          <form onSubmit={onSubmit} className="flex flex-col gap-5">
+            {/* Name */}
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass}>Full Name</label>
+              <input
+                value={form.name}
+                onChange={(e) => setField("name", e.target.value)}
+                placeholder="Your name"
+                className={inputClass}
+              />
+              {errors.name && (
+                <p className="text-[11px] text-red-500 pl-1">{errors.name}</p>
+              )}
+            </div>
+
+            {/* Email */}
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass}>Email</label>
+              <input
+                type="text"
+                value={form.email}
+                onChange={(e) => setField("email", e.target.value)}
+                placeholder="you@example.com"
+                className={inputClass}
+              />
+              {errors.email && (
+                <p className="text-[11px] text-red-500 pl-1">{errors.email}</p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass}>Password</label>
+              <div className="relative">
                 <input
-                  value={form.name}
-                  onChange={(e) => {
-                    setForm({ ...form, name: e.target.value });
-                    setErrors({ ...errors, name: "" });
-                  }}
-                  className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 text-slate-900 text-sm focus:outline-none transition"
-                  placeholder="Enter your name"
+                  type={showPassword ? "text" : "password"}
+                  value={form.password}
+                  onChange={(e) => setField("password", e.target.value)}
+                  placeholder="Min. 6 characters"
+                  className={inputClass}
                 />
-                {errors.name && (
-                  <p className="mt-2 text-xs text-red-500">{errors.name}</p>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  tabIndex={-1}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff size={14} strokeWidth={1.75} />
+                  ) : (
+                    <Eye size={14} strokeWidth={1.75} />
+                  )}
+                </button>
               </div>
+              {errors.password && (
+                <p className="text-[11px] text-red-500 pl-1">
+                  {errors.password}
+                </p>
+              )}
+            </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">
-                  Email
-                </label>
-                <input
-                  type="text"
-                  value={form.email}
-                  onChange={(e) => {
-                    setForm({ ...form, email: e.target.value });
-                    setErrors({ ...errors, email: "" });
-                  }}
-                  className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 text-slate-900 text-sm focus:outline-none transition"
-                  placeholder="Enter your email"
-                />
-                {errors.email && (
-                  <p className="mt-2 text-xs text-red-500">{errors.email}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={form.password}
-                    onChange={(e) => {
-                      setForm({ ...form, password: e.target.value });
-                      setErrors({ ...errors, password: "" });
-                    }}
-                    className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 pr-12 text-slate-900 text-sm focus:outline-none transition"
-                    placeholder="Create a password (min. 6 characters)"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="mt-2 text-xs text-red-500">{errors.password}</p>
-                )}
-              </div>
-
-              <div>
-                <input
-                  type="password"
-                  value={form.confirmPassword}
-                  onChange={(e) => {
-                    setForm({ ...form, confirmPassword: e.target.value });
-                    setErrors({ ...errors, confirmPassword: "" });
-                  }}
-                  className="w-full bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 text-slate-900 text-sm focus:outline-none transition"
-                  placeholder="Re-enter your password"
-                />
-
-                {errors.confirmPassword ? (
-                  <p className="mt-2 text-xs text-red-500">
-                    {errors.confirmPassword}
+            {/* Confirm Password */}
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass}>Confirm Password</label>
+              <input
+                type="password"
+                value={form.confirmPassword}
+                onChange={(e) => setField("confirmPassword", e.target.value)}
+                placeholder="Re-enter your password"
+                className={inputClass}
+              />
+              {errors.confirmPassword ? (
+                <p className="text-[11px] text-red-500 pl-1">
+                  {errors.confirmPassword}
+                </p>
+              ) : (
+                passwordsMatched && (
+                  <p className="flex items-center gap-1 text-[11px] text-emerald-600 pl-1">
+                    <Check size={11} strokeWidth={2.5} /> Passwords match
                   </p>
-                ) : (
-                  passwordsMatched && (
-                    <p className="mt-2 text-xs text-green-600">
-                      Passwords match
-                    </p>
-                  )
-                )}
+                )
+              )}
+            </div>
+
+            {/* Currency */}
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass}>Currency</label>
+              <div className="relative">
+                <select
+                  value={form.currency}
+                  onChange={(e) => setField("currency", e.target.value)}
+                  className={`${inputClass} appearance-none pr-10 cursor-pointer`}
+                >
+                  {CURRENCIES.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={14}
+                  strokeWidth={1.75}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">
-                  Currency
-                </label>
-                <div className="relative">
-                  <select
-                    value={form.currency}
-                    onChange={(e) => {
-                      setForm({ ...form, currency: e.target.value });
-                      setErrors({ ...errors, currency: "" });
-                    }}
-                    className="w-full appearance-none bg-slate-100/80 hover:bg-slate-100 focus:bg-white border-2 border-transparent focus:border-violet-500 rounded-2xl px-5 py-4 pr-12 text-slate-900 text-sm focus:outline-none transition cursor-pointer"
-                  >
-                    {CURRENCIES.map((c) => (
-                      <option key={c.value} value={c.value}>
-                        {c.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
-                    size={18}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                  />
-                </div>
-              </div>
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full inline-flex items-center justify-center gap-2 py-3 rounded-full text-[12px] font-semibold tracking-[0.08em] uppercase transition-all duration-200 mt-1
+                ${
+                  loading
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-gray-900 text-white hover:bg-black active:scale-[0.985] shadow-sm shadow-gray-200"
+                }`}
+            >
+              {loading ? (
+                <>
+                  <Spinner size="sm" /> Creating account…
+                </>
+              ) : (
+                "Create Account"
+              )}
+            </button>
+          </form>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full inline-flex items-center justify-center gap-2 bg-linear-to-br from-violet-400 to-violet-600 active:bg-violet-800 text-white font-semibold py-4 rounded-2xl transition shadow-lg shadow-violet-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <>
-                    <Spinner size="sm" /> Creating account...
-                  </>
-                ) : (
-                  "Create Account"
-                )}
-              </button>
-            </form>
-
-            <p className="text-center mt-8 text-sm text-slate-500">
-              Already have an account?{" "}
-              <Link
-                to="/login"
-                className="text-violet-600 font-semibold hover:text-violet-700 transition"
-              >
-                Sign in
-              </Link>
-            </p>
-          </div>
-        </div>
-
-        <div className="flex justify-start gap-6 text-xs text-slate-500">
-          <a className="hover:text-slate-900 transition cursor-pointer">
-            Privacy Policy
-          </a>
-          <a className="hover:text-slate-900 transition cursor-pointer">
-            Terms
-          </a>
-          <a className="hover:text-slate-900 transition cursor-pointer">FAQ</a>
+          <p className="text-center mt-8 text-[13px] text-gray-400">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-gray-900 font-semibold hover:underline transition"
+            >
+              Sign in
+            </Link>
+          </p>
         </div>
       </div>
 
-      <div className="hidden lg:flex lg:w-[60%] order-2">
-        <AuthHero headline="Begin" subheadline="your financial journey" />
+      {/* ── Footer ── */}
+      <div className="flex justify-center gap-6 text-[11.5px] text-gray-400 px-5 py-6">
+        <a className="hover:text-gray-900 transition cursor-pointer">
+          Privacy Policy
+        </a>
+        <a className="hover:text-gray-900 transition cursor-pointer">Terms</a>
+        <a className="hover:text-gray-900 transition cursor-pointer">FAQ</a>
       </div>
     </motion.div>
   );

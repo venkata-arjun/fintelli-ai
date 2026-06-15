@@ -4,6 +4,12 @@ export const API_PATHS = {
     LOGIN: "/auth/login",
     ME: "/auth/me",
   },
+  USER: {
+    // ← add this
+    PROFILE: "/user/profile",
+    UPDATE_PROFILE: "/user/update-profile",
+    CHANGE_PASSWORD: "/user/change-password",
+  },
   CATEGORIES: {
     LIST: "/categories",
     CREATE: "/categories",

@@ -1,23 +1,24 @@
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
-import Spinner from './Spinner.jsx';
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+import Spinner from "./Spinner.jsx";
 
 const ProtectedRoute = ({ children }) => {
-    const { user, loading } = useAuth();
+  const { loading } = useAuth();
+  const token = localStorage.getItem("token");
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Spinner size="lg" />
-            </div>
-        );
-    }
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
-    if (!user) {
-        return <Navigate to="/login" replace />;
-    }
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
-    return children;
+  return children;
 };
 
 export default ProtectedRoute;

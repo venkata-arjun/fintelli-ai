@@ -25,7 +25,7 @@ const ViewToggle = ({ view, onChange }) => (
   <div
     role="group"
     aria-label="Dashboard time range"
-    className="inline-flex items-center bg-slate-100 rounded-xl p-1 gap-1"
+    className="inline-flex items-center bg-white border border-gray-100 rounded-full p-1 gap-1"
   >
     {[
       { id: "monthly", label: "This Month", Icon: CalendarDays },
@@ -38,13 +38,13 @@ const ViewToggle = ({ view, onChange }) => (
           onClick={() => onChange(id)}
           aria-pressed={active}
           className={[
-            "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400",
+            "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-semibold tracking-[0.06em] uppercase transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/10",
             active
-              ? "bg-white text-violet-700 shadow-sm ring-1 ring-slate-200"
-              : "text-slate-500 hover:text-slate-700",
+              ? "bg-gray-900 text-white shadow-sm shadow-gray-200"
+              : "text-gray-500 hover:text-gray-900",
           ].join(" ")}
         >
-          <Icon size={14} strokeWidth={active ? 2.2 : 1.8} />
+          <Icon size={13} strokeWidth={1.75} />
           {label}
         </button>
       );
@@ -124,7 +124,7 @@ const Dashboard = () => {
   const totalBudget = budgets.reduce((sum, b) => sum + parseFloat(b.amount), 0);
   const aggPct = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
   const aggColor =
-    aggPct >= 100 ? "#F43F5E" : aggPct >= 70 ? "#F59E0B" : "#10B981";
+    aggPct >= 100 ? "#EF4444" : aggPct >= 70 ? "#F59E0B" : "#10B981";
 
   if (loading || !monthlySummary || !overallSummary) {
     return (
@@ -150,14 +150,17 @@ const Dashboard = () => {
       : (summary.netBalance ?? summary.balance);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-10">
       {/* ── Header row ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+          <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-2">
+            Overview
+          </p>
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-gray-900 leading-tight">
             Dashboard
           </h1>
-          <p className="text-sm text-slate-500 mt-1.5">
+          <p className="text-[14px] sm:text-[15px] text-gray-500 leading-7 mt-1">
             {view === "monthly"
               ? "An overview of your finances this month"
               : "An overview of all your transactions"}
@@ -172,7 +175,7 @@ const Dashboard = () => {
       {/* Animated wrapper: key forces re-mount / fade when view changes */}
       <div
         key={view}
-        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 animate-fade-in"
+        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 animate-fade-in"
         style={{ animation: "fadeSlideUp 0.25s ease both" }}
       >
         <KpiCard
@@ -206,15 +209,15 @@ const Dashboard = () => {
       {/* ── Charts row ── */}
       <div
         key={`charts-${view}`}
-        className="grid grid-cols-1 xl:grid-cols-3 gap-6"
+        className="grid grid-cols-1 xl:grid-cols-3 gap-5 sm:gap-6"
         style={{ animation: "fadeSlideUp 0.3s ease both" }}
       >
-        <div className="xl:col-span-2 bg-white rounded-3xl border border-slate-100 p-6">
+        <div className="xl:col-span-2 p-5 sm:p-7 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 hover:bg-white hover:shadow-sm transition-all duration-200">
           <div className="mb-5">
-            <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+            <h2 className="text-[15px] font-semibold text-gray-900">
               {view === "monthly" ? "Monthly Trend" : "All-time Trend"}
             </h2>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-[11px] text-gray-400 mt-0.5">
               {view === "monthly"
                 ? "Income vs expenses, last 6 months"
                 : "Income vs expenses across all recorded months"}
@@ -223,12 +226,12 @@ const Dashboard = () => {
           <MonthlyTrendChart data={trend} currency={currency} />
         </div>
 
-        <div className="bg-white rounded-3xl border border-slate-100 p-6">
+        <div className="p-5 sm:p-7 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 hover:bg-white hover:shadow-sm transition-all duration-200">
           <div className="mb-5">
-            <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+            <h2 className="text-[15px] font-semibold text-gray-900">
               Top Categories
             </h2>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-[11px] text-gray-400 mt-0.5">
               {view === "monthly" ? "Spending this month" : "Spending all time"}
             </p>
           </div>
@@ -237,24 +240,24 @@ const Dashboard = () => {
       </div>
 
       {/* ── Bottom row: Recent transactions + Budget status ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
         {/* Recent transactions */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-100 p-6">
+        <div className="lg:col-span-7 p-5 sm:p-7 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 hover:bg-white hover:shadow-sm transition-all duration-200">
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+            <h2 className="text-[15px] font-semibold text-gray-900">
               Recent Transactions
             </h2>
             <Link
               to="/transactions"
-              className="inline-flex items-center gap-1 text-sm font-medium text-violet-600 hover:text-violet-700 transition"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold tracking-[0.08em] uppercase text-gray-700 hover:text-gray-900 transition-colors"
             >
               View all
-              <ArrowRight size={14} />
+              <ArrowRight size={14} strokeWidth={1.75} />
             </Link>
           </div>
 
           {recent.length === 0 ? (
-            <p className="text-sm text-slate-500 py-6 text-center">
+            <p className="text-[13px] text-gray-500 py-6 text-center">
               No transactions yet.
             </p>
           ) : (
@@ -262,7 +265,7 @@ const Dashboard = () => {
               {recent.map((t) => (
                 <div
                   key={t.id}
-                  className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition"
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-white transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <CategoryBadge
@@ -271,20 +274,18 @@ const Dashboard = () => {
                       size="sm"
                     />
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-slate-900 truncate">
+                      <div className="text-[13px] font-medium text-gray-900 truncate">
                         {t.description || t.category_name || "Untitled"}
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-[11px] text-gray-400">
                         {t.category_name || "Uncategorized"} ·{" "}
                         {formatDate(t.transaction_date)}
                       </div>
                     </div>
                   </div>
                   <span
-                    className={`text-sm font-bold shrink-0 ${
-                      t.type === "income"
-                        ? "text-emerald-600"
-                        : "text-orange-500"
+                    className={`text-[13px] font-semibold shrink-0 ${
+                      t.type === "income" ? "text-emerald-600" : "text-red-500"
                     }`}
                   >
                     {t.type === "income" ? "+" : "-"}
@@ -297,31 +298,35 @@ const Dashboard = () => {
         </div>
 
         {/* Budget status */}
-        <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-100 p-6">
+        <div className="lg:col-span-5 p-5 sm:p-7 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 hover:bg-white hover:shadow-sm transition-all duration-200">
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+            <h2 className="text-[15px] font-semibold text-gray-900">
               Budget Status
             </h2>
             <Link
               to="/budgets"
-              className="inline-flex items-center gap-1 text-sm font-medium text-violet-600 hover:text-violet-700 transition"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold tracking-[0.08em] uppercase text-gray-700 hover:text-gray-900 transition-colors"
             >
               View all
-              <ArrowRight size={14} />
+              <ArrowRight size={14} strokeWidth={1.75} />
             </Link>
           </div>
 
           {budgets.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
-                <Target size={20} className="text-slate-400" />
+              <div className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center mb-3">
+                <Target
+                  size={17}
+                  strokeWidth={1.75}
+                  className="text-gray-600"
+                />
               </div>
-              <p className="text-sm font-semibold text-slate-900 mb-1">
+              <p className="text-[15px] font-semibold text-gray-900 mb-1">
                 No budgets yet
               </p>
               <Link
                 to="/budgets"
-                className="text-xs text-violet-600 font-medium hover:text-violet-700"
+                className="text-[11px] font-semibold tracking-[0.08em] uppercase text-gray-700 hover:text-gray-900 transition-colors"
               >
                 Create one →
               </Link>
@@ -331,24 +336,24 @@ const Dashboard = () => {
               <div className="mb-5">
                 <div className="flex items-baseline justify-between mb-2">
                   <div>
-                    <div className="text-2xl font-bold tracking-tight text-slate-900">
+                    <div className="text-2xl font-bold tracking-tight text-gray-900">
                       {formatCurrency(totalSpent, currency)}
                     </div>
-                    <div className="text-xs text-slate-500 mt-0.5">
+                    <div className="text-[11px] text-gray-400 mt-0.5">
                       of {formatCurrency(totalBudget, currency)} total
                     </div>
                   </div>
                   <div className="text-right">
                     <div
-                      className="text-sm font-bold"
+                      className="text-[13px] font-bold"
                       style={{ color: aggColor }}
                     >
                       {aggPct.toFixed(0)}%
                     </div>
-                    <div className="text-[10px] text-slate-500">used</div>
+                    <div className="text-[10px] text-gray-400">used</div>
                   </div>
                 </div>
-                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-white border border-gray-100 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
@@ -366,19 +371,19 @@ const Dashboard = () => {
                   const pct =
                     total > 0 ? Math.min((spent / total) * 100, 100) : 0;
                   const color =
-                    pct >= 100 ? "#F43F5E" : pct >= 70 ? "#F59E0B" : "#10B981";
+                    pct >= 100 ? "#EF4444" : pct >= 70 ? "#F59E0B" : "#10B981";
                   return (
                     <div key={b.id}>
-                      <div className="flex justify-between items-center text-xs mb-1.5">
-                        <span className="text-slate-700 font-medium truncate">
+                      <div className="flex justify-between items-center text-[11px] mb-1.5">
+                        <span className="text-gray-700 font-medium truncate">
                           {b.category_name}
                         </span>
-                        <span className="text-slate-500 shrink-0 ml-2 text-[11px]">
+                        <span className="text-gray-400 shrink-0 ml-2 text-[11px]">
                           {formatCurrency(spent, currency)} /{" "}
                           {formatCurrency(total, currency)}
                         </span>
                       </div>
-                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-white border border-gray-100 rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{ width: `${pct}%`, backgroundColor: color }}

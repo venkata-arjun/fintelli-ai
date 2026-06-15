@@ -19,12 +19,9 @@ const labelMap = {
 };
 
 const typeStyles = {
-  monthly_summary: {
-    gradient: "from-violet-400 to-violet-600",
-    Icon: TrendingUp,
-  },
-  budget_alert: { gradient: "from-rose-400 to-rose-600", Icon: AlertTriangle },
-  savings_tips: { gradient: "from-blue-400 to-blue-600", Icon: Lightbulb },
+  monthly_summary: { Icon: TrendingUp },
+  budget_alert: { Icon: AlertTriangle },
+  savings_tips: { Icon: Lightbulb },
 };
 
 const HealthScoreGauge = ({ score = 0 }) => {
@@ -32,7 +29,7 @@ const HealthScoreGauge = ({ score = 0 }) => {
   const radius = 52;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (safe / 100) * circumference;
-  const color = safe >= 70 ? "#10B981" : safe >= 40 ? "#F59E0B" : "#F43F5E";
+  const color = safe >= 70 ? "#10B981" : safe >= 40 ? "#6B7280" : "#EF4444";
   const label = safe >= 70 ? "Healthy" : safe >= 40 ? "Watch" : "Risky";
 
   return (
@@ -42,7 +39,7 @@ const HealthScoreGauge = ({ score = 0 }) => {
           cx="60"
           cy="60"
           r={radius}
-          stroke="#E2E8F0"
+          stroke="#F3F4F6"
           strokeWidth="10"
           fill="none"
         />
@@ -60,11 +57,11 @@ const HealthScoreGauge = ({ score = 0 }) => {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-4xl font-bold tracking-tight text-slate-900">
+        <div className="text-4xl font-bold tracking-tight text-gray-900">
           {safe}
         </div>
         <div
-          className="text-[10px] uppercase tracking-wider font-semibold"
+          className="text-[10px] uppercase tracking-[0.2em] font-semibold"
           style={{ color }}
         >
           {label}
@@ -74,17 +71,15 @@ const HealthScoreGauge = ({ score = 0 }) => {
   );
 };
 
-const Stat = ({ label, value, accent = "slate" }) => {
+const Stat = ({ label, value, accent = "gray" }) => {
   const accents = {
     emerald: "text-emerald-600",
-    rose: "text-rose-600",
-    violet: "text-violet-600",
-    amber: "text-amber-600",
-    slate: "text-slate-900",
+    red: "text-red-500",
+    gray: "text-gray-900",
   };
   return (
-    <div className="bg-slate-50 rounded-2xl p-4">
-      <div className="text-xs text-slate-500 mb-1 font-medium">{label}</div>
+    <div className="bg-white border border-gray-100 rounded-2xl p-4">
+      <div className="text-[11px] text-gray-400 mb-1 font-medium">{label}</div>
       <div className={`text-xl font-bold tracking-tight ${accents[accent]}`}>
         {value}
       </div>
@@ -99,30 +94,32 @@ const MonthlySummaryView = ({ c }) => {
       : 0;
 
   return (
-  <div className="space-y-6">
-    <div className="flex flex-col md:flex-row gap-6 items-center bg-linear-to-br from-violet-50 via-white to-blue-50 rounded-2xl p-6 border border-slate-100">
-      <HealthScoreGauge score={c.healthScore} />
-      <div className="flex-1 min-w-0">
-        <div className="text-[11px] uppercase tracking-wider font-semibold text-slate-500 mb-2">
-          AI Summary
-        </div>
-        <p className="text-slate-700 leading-relaxed">{c.summary}</p>
-        {c.topSpendingCategory && (
-          <div className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-slate-600 bg-white border border-slate-200 px-3 py-1.5 rounded-full">
-            <span className="text-slate-400">Top category</span>
-            <span className="font-semibold text-slate-900">
-              {c.topSpendingCategory}
-            </span>
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row gap-6 items-center bg-white rounded-2xl p-6 border border-gray-100">
+        <HealthScoreGauge score={c.healthScore} />
+        <div className="flex-1 min-w-0">
+          <div className="text-[10px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-2">
+            AI Summary
           </div>
-        )}
+          <p className="text-[14px] sm:text-[15px] text-gray-500 leading-7">
+            {c.summary}
+          </p>
+          {c.topSpendingCategory && (
+            <div className="mt-3 inline-flex items-center gap-2 text-[11px] font-medium text-gray-600 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-full">
+              <span className="text-gray-400">Top category</span>
+              <span className="font-semibold text-gray-900">
+                {c.topSpendingCategory}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Stat
           label="Health Score"
           value={`${c.healthScore ?? 0}/100`}
-          accent="violet"
+          accent="gray"
         />
         {estimatedAdditionalSavings > 0 && (
           <Stat
@@ -134,95 +131,107 @@ const MonthlySummaryView = ({ c }) => {
         <Stat
           label="Recommendations"
           value={c.recommendations?.length || 0}
-          accent="slate"
+          accent="gray"
         />
-    </div>
-
-    {c.highlights?.length > 0 && (
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Check size={14} className="text-emerald-600" />
-          <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-            What's going well
-          </h4>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {c.highlights.map((h, i) => (
-            <div
-              key={i}
-              className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-start gap-3"
-            >
-              <div className="h-6 w-6 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 mt-0.5">
-                <Check size={12} className="text-white" strokeWidth={3} />
-              </div>
-              <p className="text-sm text-emerald-900 leading-relaxed">{h}</p>
-            </div>
-          ))}
-        </div>
       </div>
-    )}
 
-    {c.concerns?.length > 0 && (
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <AlertCircle size={14} className="text-rose-600" />
-          <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-            Areas to watch
-          </h4>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {c.concerns.map((concern, i) => (
-            <div
-              key={i}
-              className="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3"
-            >
-              <div className="h-6 w-6 rounded-full bg-rose-500 flex items-center justify-center shrink-0 mt-0.5">
-                <AlertCircle size={12} className="text-white" strokeWidth={3} />
-              </div>
-              <p className="text-sm text-rose-900 leading-relaxed">{concern}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
-
-    {c.recommendations?.length > 0 && (
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles size={14} className="text-violet-600" />
-          <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-            Recommendations
-          </h4>
-        </div>
-        <div className="space-y-2">
-          {c.recommendations.map((r, i) => (
-            <div
-              key={i}
-              className="p-4 bg-white border border-slate-200 hover:border-violet-200 rounded-2xl transition flex items-start gap-3"
-            >
-              <div className="h-7 w-7 rounded-full bg-linear-to-br from-violet-400 to-violet-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                {i + 1}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm text-slate-900 mb-0.5">
-                  {r.title}
+      {c.highlights?.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Check size={14} strokeWidth={1.75} className="text-emerald-600" />
+            <h4 className="text-[10px] font-semibold tracking-[0.18em] uppercase text-gray-400">
+              What's going well
+            </h4>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {c.highlights.map((h, i) => (
+              <div
+                key={i}
+                className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-start gap-3"
+              >
+                <div className="h-6 w-6 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 mt-0.5">
+                  <Check size={12} strokeWidth={3} className="text-white" />
                 </div>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  {r.detail}
+                <p className="text-[13px] text-emerald-900 leading-relaxed">
+                  {h}
                 </p>
-                {Number(r.estimatedSavings) > 0 && (
-                  <div className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
-                    <TrendingUp size={11} />
-                    ~₹{Number(r.estimatedSavings).toLocaleString()}/mo
-                  </div>
-                )}
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
-    )}
-  </div>
+      )}
+
+      {c.concerns?.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <AlertCircle
+              size={14}
+              strokeWidth={1.75}
+              className="text-red-500"
+            />
+            <h4 className="text-[10px] font-semibold tracking-[0.18em] uppercase text-gray-400">
+              Areas to watch
+            </h4>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {c.concerns.map((concern, i) => (
+              <div
+                key={i}
+                className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3"
+              >
+                <div className="h-6 w-6 rounded-full bg-red-500 flex items-center justify-center shrink-0 mt-0.5">
+                  <AlertCircle
+                    size={12}
+                    strokeWidth={3}
+                    className="text-white"
+                  />
+                </div>
+                <p className="text-[13px] text-red-900 leading-relaxed">
+                  {concern}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {c.recommendations?.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles size={14} strokeWidth={1.75} className="text-gray-700" />
+            <h4 className="text-[10px] font-semibold tracking-[0.18em] uppercase text-gray-400">
+              Recommendations
+            </h4>
+          </div>
+          <div className="space-y-2">
+            {c.recommendations.map((r, i) => (
+              <div
+                key={i}
+                className="p-4 bg-white border border-gray-100 hover:border-gray-300 hover:shadow-sm rounded-2xl transition-all duration-200 flex items-start gap-3"
+              >
+                <div className="h-7 w-7 rounded-full bg-gray-900 flex items-center justify-center text-[12px] font-bold text-white shrink-0">
+                  {i + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-[14px] text-gray-900 mb-0.5">
+                    {r.title}
+                  </div>
+                  <p className="text-[13px] text-gray-500 leading-relaxed">
+                    {r.detail}
+                  </p>
+                  {Number(r.estimatedSavings) > 0 && (
+                    <div className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+                      <TrendingUp size={11} strokeWidth={1.75} />
+                      ~₹{Number(r.estimatedSavings).toLocaleString()}/mo
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -235,17 +244,17 @@ const SavingsTipsView = ({ c }) => {
   return (
     <div className="space-y-5">
       {c.overallTip && (
-        <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-violet-500 to-violet-700 p-5 text-white">
-          <div className="absolute top-0 right-0 -mt-8 -mr-8 h-32 w-32 bg-white/10 rounded-full blur-2xl" />
+        <div className="relative overflow-hidden rounded-2xl bg-gray-900 p-5 text-white">
+          <div className="absolute top-0 right-0 -mt-8 -mr-8 h-32 w-32 bg-white/5 rounded-full blur-2xl" />
           <div className="relative flex items-start gap-3">
-            <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-              <Lightbulb size={18} className="text-white" />
+            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+              <Lightbulb size={18} strokeWidth={1.75} className="text-white" />
             </div>
             <div>
-              <div className="text-[11px] uppercase tracking-wider font-semibold text-white/70 mb-1">
+              <div className="text-[10px] font-semibold tracking-[0.2em] uppercase text-white/50 mb-1">
                 Top tip
               </div>
-              <p className="text-sm leading-relaxed font-medium">
+              <p className="text-[14px] leading-7 font-medium">
                 {c.overallTip}
               </p>
             </div>
@@ -260,7 +269,7 @@ const SavingsTipsView = ({ c }) => {
             value={`₹${totalSavings.toFixed(0)}/mo`}
             accent="emerald"
           />
-          <Stat label="Tips" value={c.tips?.length || 0} accent="violet" />
+          <Stat label="Tips" value={c.tips?.length || 0} accent="gray" />
         </div>
       )}
 
@@ -270,25 +279,25 @@ const SavingsTipsView = ({ c }) => {
           return (
             <div
               key={i}
-              className="group relative p-5 rounded-2xl bg-white border border-slate-100 hover:border-violet-200 hover:shadow-sm transition"
+              className="group relative p-5 rounded-2xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all duration-200"
             >
               <div className="flex items-center justify-between mb-3">
                 {t.category && (
-                  <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 px-2.5 py-1 rounded-full">
+                  <span className="text-[10px] font-semibold tracking-[0.18em] uppercase text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full">
                     {t.category}
                   </span>
                 )}
                 {savings > 0 && (
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
-                    <TrendingUp size={11} />
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+                    <TrendingUp size={11} strokeWidth={1.75} />
                     ~₹{savings}/mo
                   </span>
                 )}
               </div>
-              <h5 className="text-base font-bold text-slate-900 mb-1.5">
+              <h5 className="text-[15px] font-semibold text-gray-900 mb-1.5">
                 {t.title}
               </h5>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-[13px] text-gray-500 leading-relaxed">
                 {t.detail}
               </p>
             </div>
@@ -303,25 +312,25 @@ const BudgetAlertView = ({ c }) => {
   const severity = c.severity || "info";
   const sev = {
     info: {
-      bg: "bg-blue-50",
-      border: "border-blue-200",
-      icon: "bg-blue-500",
-      text: "text-blue-900",
-      accent: "text-blue-700",
+      bg: "bg-gray-50",
+      border: "border-gray-100",
+      icon: "bg-gray-900",
+      text: "text-gray-900",
+      accent: "text-gray-600",
     },
     warning: {
-      bg: "bg-amber-50",
-      border: "border-amber-200",
-      icon: "bg-amber-500",
-      text: "text-amber-900",
-      accent: "text-amber-700",
+      bg: "bg-gray-50",
+      border: "border-gray-100",
+      icon: "bg-gray-900",
+      text: "text-gray-900",
+      accent: "text-gray-600",
     },
     critical: {
-      bg: "bg-rose-50",
-      border: "border-rose-200",
-      icon: "bg-rose-500",
-      text: "text-rose-900",
-      accent: "text-rose-700",
+      bg: "bg-red-50",
+      border: "border-red-100",
+      icon: "bg-red-500",
+      text: "text-red-900",
+      accent: "text-red-600",
     },
   }[severity];
 
@@ -332,22 +341,26 @@ const BudgetAlertView = ({ c }) => {
           <div
             className={`h-10 w-10 rounded-xl ${sev.icon} flex items-center justify-center shrink-0`}
           >
-            <AlertTriangle size={18} className="text-white" />
+            <AlertTriangle
+              size={18}
+              strokeWidth={1.75}
+              className="text-white"
+            />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span
-                className={`text-[10px] uppercase tracking-wider font-bold ${sev.accent} bg-white/60 px-2 py-0.5 rounded-full`}
+                className={`text-[10px] font-semibold tracking-[0.18em] uppercase ${sev.accent} bg-white px-2 py-0.5 rounded-full`}
               >
                 {severity}
               </span>
             </div>
             {c.title && (
-              <h4 className={`font-bold ${sev.text} text-base mb-1`}>
+              <h4 className={`font-semibold ${sev.text} text-[15px] mb-1`}>
                 {c.title}
               </h4>
             )}
-            <p className={`text-sm ${sev.text} opacity-90 leading-relaxed`}>
+            <p className={`text-[13px] ${sev.text} opacity-80 leading-relaxed`}>
               {c.message}
             </p>
           </div>
@@ -357,8 +370,12 @@ const BudgetAlertView = ({ c }) => {
       {c.suggestions?.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <ArrowRight size={14} className="text-violet-600" />
-            <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+            <ArrowRight
+              size={14}
+              strokeWidth={1.75}
+              className="text-gray-700"
+            />
+            <h4 className="text-[10px] font-semibold tracking-[0.18em] uppercase text-gray-400">
               Suggested actions
             </h4>
           </div>
@@ -366,12 +383,14 @@ const BudgetAlertView = ({ c }) => {
             {c.suggestions.map((sug, i) => (
               <div
                 key={i}
-                className="p-4 bg-white border border-slate-200 hover:border-violet-200 rounded-2xl flex items-start gap-3 transition"
+                className="p-4 bg-white border border-gray-100 hover:border-gray-300 rounded-2xl flex items-start gap-3 transition-all duration-200"
               >
-                <div className="h-7 w-7 rounded-full bg-violet-50 flex items-center justify-center shrink-0 text-xs font-bold text-violet-700">
+                <div className="h-7 w-7 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 text-[12px] font-bold text-gray-700">
                   {i + 1}
                 </div>
-                <p className="text-sm text-slate-700 leading-relaxed">{sug}</p>
+                <p className="text-[13px] text-gray-700 leading-relaxed">
+                  {sug}
+                </p>
               </div>
             ))}
           </div>
@@ -399,13 +418,13 @@ const headerChip = (insight) => {
     const score = c.healthScore;
     const tone =
       score >= 70
-        ? "bg-emerald-50 text-emerald-700"
+        ? "bg-emerald-50 text-emerald-600"
         : score >= 40
-          ? "bg-amber-50 text-amber-700"
-          : "bg-rose-50 text-rose-700";
+          ? "bg-gray-100 text-gray-600"
+          : "bg-red-50 text-red-500";
     return (
       <span
-        className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${tone}`}
+        className={`text-[10px] font-semibold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full ${tone}`}
       >
         Score {score}
       </span>
@@ -414,13 +433,13 @@ const headerChip = (insight) => {
   if (insight.insight_type === "budget_alert" && c.severity) {
     const tone =
       c.severity === "critical"
-        ? "bg-rose-50 text-rose-700"
+        ? "bg-red-50 text-red-500"
         : c.severity === "warning"
-          ? "bg-amber-50 text-amber-700"
-          : "bg-blue-50 text-blue-700";
+          ? "bg-gray-100 text-gray-600"
+          : "bg-gray-100 text-gray-600";
     return (
       <span
-        className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${tone}`}
+        className={`text-[10px] font-semibold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full ${tone}`}
       >
         {c.severity}
       </span>
@@ -433,7 +452,7 @@ const headerChip = (insight) => {
     );
     if (total > 0) {
       return (
-        <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+        <span className="text-[10px] font-semibold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600">
           ~₹{total}/mo
         </span>
       );
@@ -449,38 +468,44 @@ const InsightCard = ({ insight, defaultExpanded = false }) => {
   const TypeIcon = t.Icon;
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden hover:border-slate-200 transition">
+    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all duration-200">
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full p-5 flex items-start gap-4 text-left hover:bg-slate-50/40 transition"
+        className="w-full p-5 flex items-start gap-4 text-left hover:bg-gray-50 transition-colors"
       >
-        <div
-          className={`h-12 w-12 rounded-2xl bg-linear-to-br ${t.gradient} flex items-center justify-center shrink-0`}
-        >
-          <TypeIcon size={22} className="text-white" />
+        <div className="h-10 w-10 rounded-xl bg-gray-900 flex items-center justify-center shrink-0">
+          <TypeIcon size={17} strokeWidth={1.75} className="text-white" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <h3 className="font-bold text-slate-900">
+            <h3 className="text-[15px] font-semibold text-gray-900">
               {labelMap[insight.insight_type]}
             </h3>
             {headerChip(insight)}
-            <span className="text-xs text-slate-400">
+            <span className="text-[11px] text-gray-400">
               {timeAgo(insight.created_at)}
             </span>
           </div>
-          <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
+          <p className="text-[13px] text-gray-500 line-clamp-2 leading-relaxed">
             {previewText(insight)}
           </p>
         </div>
         {expanded ? (
-          <ChevronUp size={18} className="text-slate-400 shrink-0 mt-1" />
+          <ChevronUp
+            size={18}
+            strokeWidth={1.75}
+            className="text-gray-400 shrink-0 mt-1"
+          />
         ) : (
-          <ChevronDown size={18} className="text-slate-400 shrink-0 mt-1" />
+          <ChevronDown
+            size={18}
+            strokeWidth={1.75}
+            className="text-gray-400 shrink-0 mt-1"
+          />
         )}
       </button>
       {expanded && (
-        <div className="px-5 pb-6 border-t border-slate-100 pt-5">
+        <div className="px-5 pb-6 border-t border-gray-100 pt-5">
           {insight.insight_type === "monthly_summary" && (
             <MonthlySummaryView c={c} />
           )}
