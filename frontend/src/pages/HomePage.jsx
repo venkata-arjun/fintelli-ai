@@ -172,13 +172,6 @@ const Hero = () => {
             Get Started
             <ArrowRight size={14} strokeWidth={2} />
           </Link>
-
-          <Link
-            to="/login"
-            className="inline-flex items-center justify-center rounded-full border border-gray-200 px-7 py-3.5 text-[13px] font-semibold uppercase tracking-[0.06em] text-gray-700 transition-all duration-200 hover:border-gray-400 hover:text-gray-900"
-          >
-            Log In
-          </Link>
         </div>
 
         {/* Bottom badges */}
