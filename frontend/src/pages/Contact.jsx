@@ -94,8 +94,6 @@ const Contact = () => {
                 </div>
               </div>
 
-              <div className="h-px bg-gray-100" />
-
               {/* Why Fintelli */}
               <div>
                 <SubLabel>Why Fintelli AI</SubLabel>
@@ -122,8 +120,6 @@ const Contact = () => {
                   ))}
                 </div>
               </div>
-
-              <div className="h-px bg-gray-100" />
 
               {/* Get in touch */}
               {/* Get in touch */}
@@ -194,7 +190,6 @@ const Contact = () => {
                   </a>
                 </div>
               </div>
-              <div className="h-px bg-gray-100" />
 
               {/* Support hours */}
               <div>

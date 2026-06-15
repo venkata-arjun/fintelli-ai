@@ -95,7 +95,7 @@ const SectionHeader = ({ label, title, subtitle, highlight, dark = false }) => (
    HERO
 ═══════════════════════════════════ */
 
-const typingText = "powered by AI for smarter decisions";
+const typingText = "Powered by AI for Smarter Decisions";
 
 const Hero = () => {
   const [ref, visible] = useInView(0.05);
@@ -147,7 +147,7 @@ const Hero = () => {
 
         {/* Heading */}
         <h1 className="max-w-4xl mx-auto text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-tight">
-          Track expenses,
+          Track Expenses,
           <span className="block mt-2 text-gray-400 font-semibold min-h-[1.2em]">
             {displayText}
             <span className="ml-1 inline-block animate-pulse text-gray-400">

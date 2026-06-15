@@ -102,7 +102,7 @@ const About = () => {
                 </div>
               </div>
 
-              <div className="h-px bg-gray-100" />
+              
 
               {/* Stats row */}
               <div className="grid grid-cols-3 gap-6">
@@ -118,7 +118,7 @@ const About = () => {
                 ))}
               </div>
 
-              <div className="h-px bg-gray-100" />
+              
 
               
             </div>
