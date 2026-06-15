@@ -47,8 +47,6 @@ const Topbar = ({ onMenuClick }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  
-
   const handleLogout = () => {
     setOpen(false);
     logout();
@@ -69,7 +67,7 @@ const Topbar = ({ onMenuClick }) => {
         <div className="min-w-0">
           <h2 className="text-[16px] font-semibold text-slate-900 truncate">
             {greeting()}
-            {firstName && `, ${firstName}`} 👋
+            {firstName && `, ${firstName}`}
           </h2>
 
           <p className="text-xs text-slate-400 mt-0.5">{formatToday()}</p>
