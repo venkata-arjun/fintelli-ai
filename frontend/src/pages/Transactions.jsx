@@ -16,7 +16,7 @@ import toast from "react-hot-toast";
 import api from "../lib/axios.js";
 import { API_PATHS } from "../utils/apiPaths.js";
 import { useAuth } from "../context/AuthContext.jsx";
-import { formatCurrency, formatDate } from "../utils/format.js";
+import { formatCurrency, formatDate, formatDateLong } from "../utils/format.js";
 import Button from "../components/ui/Button.jsx";
 import Modal from "../components/ui/Modal.jsx";
 import CategoryBadge from "../components/CategoryBadge.jsx";
@@ -39,7 +39,8 @@ const Transactions = () => {
     dateFrom: "",
     dateTo: "",
   });
-  const [sort, setSort] = useState("desc");
+  const [sortBy, setSortBy] = useState("date");
+  const [sortDir, setSortDir] = useState("desc");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [analysis, setAnalysis] = useState(null);
@@ -74,7 +75,7 @@ const Transactions = () => {
   }, [filters.search, filters.categoryId]);
   useEffect(() => {
     setPage(1);
-  }, [filters, sort]);
+  }, [filters, sortBy, sortDir]);
 
   // Base list: only date filters applied (no type filter yet)
   // Used for counts so badges reflect date range but still show per-type totals
@@ -114,13 +115,19 @@ const Transactions = () => {
     if (filters.type) list = list.filter((t) => t.type === filters.type);
 
     list = [...list].sort((a, b) => {
-      const amountA = parseFloat(a.amount);
-      const amountB = parseFloat(b.amount);
-      return sort === "desc" ? amountB - amountA : amountA - amountB;
+      let valA, valB;
+      if (sortBy === "amount") {
+        valA = parseFloat(a.amount);
+        valB = parseFloat(b.amount);
+      } else {
+        valA = new Date(a.transaction_date).getTime();
+        valB = new Date(b.transaction_date).getTime();
+      }
+      return sortDir === "desc" ? valB - valA : valA - valB;
     });
 
     return list;
-  }, [dateFilteredTransactions, filters.type, sort]);
+  }, [dateFilteredTransactions, filters.type, sortBy, sortDir]);
 
   const MONTH_NAMES = [
     "Jan",
@@ -240,6 +247,15 @@ const Transactions = () => {
   ).length;
   const clearDateFilter = () =>
     setFilters((f) => ({ ...f, dateFrom: "", dateTo: "" }));
+
+  const toggleSort = (column) => {
+    if (sortBy === column) {
+      setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+    } else {
+      setSortBy(column);
+      setSortDir("desc");
+    }
+  };
 
   const onEdit = (t) => {
     setEditing(t);
@@ -445,7 +461,7 @@ const Transactions = () => {
       <div className="p-5 sm:p-7 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 hover:bg-white hover:shadow-sm transition-all duration-200">
         {/* Filter bar */}
         <div className="flex flex-col gap-3 mb-5">
-          {/* Row 1: search + sort + mobile filter toggle */}
+          {/* Row 1: search + mobile filter toggle */}
           <div className="flex items-center gap-2">
             <div className="relative flex-1 min-w-0">
               <Search
@@ -462,20 +478,6 @@ const Transactions = () => {
                 className="w-full pl-9 pr-4 py-3 bg-white border border-gray-200 text-gray-800 rounded-xl text-[13px] focus:outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/5 transition-all duration-200 placeholder:text-gray-400"
               />
             </div>
-
-            <button
-              onClick={() => setSort((s) => (s === "desc" ? "asc" : "desc"))}
-              title={
-                sort === "desc" ? "Highest amount first" : "Lowest amount first"
-              }
-              className={`h-[42px] w-[42px] flex items-center justify-center rounded-xl border transition-all duration-200 shrink-0 ${
-                sort === "asc"
-                  ? "border-gray-900 bg-gray-900 text-white"
-                  : "border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-900"
-              }`}
-            >
-              <ArrowUpDown size={15} strokeWidth={1.75} />
-            </button>
 
             <button
               onClick={() => setFiltersOpen((o) => !o)}
@@ -595,10 +597,10 @@ const Transactions = () => {
                 className="text-gray-400"
               />
               {filters.dateFrom && filters.dateTo
-                ? `${filters.dateFrom} → ${filters.dateTo}`
+                ? `${formatDateLong(filters.dateFrom)} To ${formatDateLong(filters.dateTo)}`
                 : filters.dateFrom
-                  ? `From ${filters.dateFrom}`
-                  : `Until ${filters.dateTo}`}
+                  ? `From ${formatDateLong(filters.dateFrom)}`
+                  : `Until ${formatDateLong(filters.dateTo)}`}
             </div>
           )}
         </div>
@@ -629,13 +631,25 @@ const Transactions = () => {
                 <tr className="text-left text-[10px] font-semibold tracking-[0.18em] uppercase text-gray-400 border-b border-gray-100">
                   <th className="pb-3 pr-3">Category</th>
                   <th className="pb-3 pr-3">Description</th>
-                  <th className="pb-3 pr-3">Date</th>
+                  <th className="pb-3 pr-3">
+                    <button
+                      onClick={() => toggleSort("date")}
+                      className="flex items-center gap-1 hover:text-gray-700 transition-colors"
+                    >
+                      Date
+                      <ArrowUpDown
+                        size={11}
+                        strokeWidth={1.75}
+                        className={
+                          sortBy === "date" ? "text-gray-900" : "text-gray-400"
+                        }
+                      />
+                    </button>
+                  </th>
                   <th className="pb-3 pr-3">Type</th>
                   <th className="pb-3 pr-3 text-right">
                     <button
-                      onClick={() =>
-                        setSort((s) => (s === "desc" ? "asc" : "desc"))
-                      }
+                      onClick={() => toggleSort("amount")}
                       className="flex items-center gap-1 ml-auto hover:text-gray-700 transition-colors"
                     >
                       Amount
@@ -643,7 +657,9 @@ const Transactions = () => {
                         size={11}
                         strokeWidth={1.75}
                         className={
-                          sort === "asc" ? "text-gray-900" : "text-gray-400"
+                          sortBy === "amount"
+                            ? "text-gray-900"
+                            : "text-gray-400"
                         }
                       />
                     </button>

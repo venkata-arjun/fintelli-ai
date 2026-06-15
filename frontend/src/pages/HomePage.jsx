@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   TrendingUp,
   ShieldCheck,
+  MessageCircle,
   LayoutDashboard,
   PieChart,
   ArrowRight,
@@ -43,13 +44,13 @@ const SectionHeader = ({ label, title, subtitle, highlight, dark = false }) => (
   <div className="flex flex-col items-center text-center gap-3 mb-12">
     {/* Label with flanking lines */}
     <div className="flex items-center gap-3 w-full max-w-xs">
-      <div className={`flex-1 h-px ${dark ? "bg-white/10" : "bg-gray-100"}`} />
+      <div className={`flex-1 h-px ${dark ? "bg-white/10" : "bg-gray-200"}`} />
       <span
         className={`text-[10.5px] font-semibold tracking-[0.2em] uppercase whitespace-nowrap ${dark ? "text-gray-500" : "text-gray-400"}`}
       >
         {label}
       </span>
-      <div className={`flex-1 h-px ${dark ? "bg-white/10" : "bg-gray-100"}`} />
+      <div className={`flex-1 h-px ${dark ? "bg-white/10" : "bg-gray-200"}`} />
     </div>
 
     {/* Main heading */}
@@ -130,7 +131,12 @@ const Hero = () => {
   }, [displayText, deleting]);
 
   return (
-    <section ref={ref} className="bg-white border-b border-gray-100">
+    <section ref={ref} className="relative bg-white overflow-hidden">
+      {/* Soft ambient glow */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[60rem] h-[28rem] bg-gradient-to-b from-gray-100 to-transparent rounded-full blur-3xl opacity-70" />
+      </div>
+
       <div
         className="max-w-5xl mx-auto px-5 lg:px-8 pt-28 pb-24 lg:pt-36 lg:pb-32 text-center"
         style={{
@@ -140,7 +146,7 @@ const Hero = () => {
         }}
       >
         {/* Label */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-gray-50 text-gray-600 text-[13px] font-medium mb-8">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-gray-50 text-gray-600 text-[13px] font-medium mb-8 shadow-sm shadow-gray-100">
           <Wallet size={14} strokeWidth={1.75} />
           Personal Finance Made Simple
         </div>
@@ -164,22 +170,28 @@ const Hero = () => {
         </p>
 
         {/* Buttons */}
-        <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-3">
+        <div className="mt-10 flex flex-row justify-center items-center gap-3">
           <Link
             to="/register"
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 px-7 py-3.5 text-[13px] font-semibold uppercase tracking-[0.06em] text-white shadow-sm shadow-gray-200 transition-all duration-200 hover:bg-black active:scale-[0.985]"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 px-7 py-3.5 text-[13px] font-semibold uppercase tracking-[0.06em] text-white shadow-md shadow-gray-300/60 transition-all duration-200 hover:bg-black hover:shadow-lg hover:shadow-gray-300/70 active:scale-[0.985]"
           >
             Get Started
             <ArrowRight size={14} strokeWidth={2} />
+          </Link>
+          <Link
+            to="/login"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-7 py-3.5 text-[13px] font-semibold uppercase tracking-[0.06em] text-gray-700 shadow-sm shadow-gray-100 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 active:scale-[0.985]"
+          >
+            Log In
           </Link>
         </div>
 
         {/* Bottom badges */}
         <div className="mt-12 flex flex-wrap justify-center gap-8 text-[13px] text-gray-400">
           {[
-            "Free to get started",
-            "Secure data storage",
-            "Clean & intuitive dashboard",
+            "AI-powered insights",
+            "Smart budget tracking",
+            "Expense analytics",
           ].map((item) => (
             <div key={item} className="flex items-center gap-2">
               <CheckCircle2
@@ -226,9 +238,9 @@ const features = [
     desc: "Track income, expenses, and savings trends to make smarter financial decisions.",
   },
   {
-    icon: ShieldCheck,
-    title: "Secure & Reliable",
-    desc: "Your financial information stays protected with modern security and encrypted storage.",
+    icon: MessageCircle,
+    title: "Ask AI Anything",
+    desc: "Get instant answers and personalized guidance for budgeting, expenses, savings, and financial planning.",
   },
 ];
 
@@ -239,9 +251,9 @@ const FeatureCard = ({ icon: Icon, title, desc, index, visible }) => (
       transform: visible ? "translateY(0)" : "translateY(20px)",
       transition: `all .5s ${index * 0.08}s ease`,
     }}
-    className="flex flex-col gap-5 p-7 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 hover:bg-white hover:shadow-sm transition-all duration-200"
+    className="flex flex-col gap-5 p-7 rounded-2xl border border-gray-100 bg-white hover:border-gray-200 hover:shadow-md hover:shadow-gray-100 hover:-translate-y-0.5 transition-all duration-200"
   >
-    <div className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center">
+    <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center">
       <Icon size={17} strokeWidth={1.75} className="text-gray-600" />
     </div>
     <div>
@@ -255,7 +267,7 @@ const Features = () => {
   const [ref, visible] = useInView();
 
   return (
-    <section className="bg-white border-y border-gray-100">
+    <section className="bg-gray-50">
       <div className="max-w-6xl mx-auto px-5 lg:px-8 py-20 lg:py-28">
         <SectionHeader
           label="Features"
@@ -323,7 +335,7 @@ const Benefits = () => {
                 transform: visible ? "translateY(0)" : "translateY(20px)",
                 transition: `all .5s ${index * 0.08}s ease`,
               }}
-              className="flex flex-col gap-5 p-7 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 hover:bg-white hover:shadow-sm transition-all duration-200"
+              className="flex flex-col gap-5 p-7 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-white hover:shadow-md hover:shadow-gray-100 hover:-translate-y-0.5 transition-all duration-200"
             >
               <div className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center">
                 <item.icon
@@ -355,10 +367,10 @@ const CTA = () => {
   const [ref, visible] = useInView();
 
   return (
-    <section className="max-w-6xl mx-auto px-5 lg:px-8 py-20">
+    <section className="max-w-6xl mx-auto px-5 lg:px-8 pb-24 lg:pb-32">
       <div
         ref={ref}
-        className="rounded-2xl bg-gray-900 px-6 py-14 sm:px-10 sm:py-16 lg:px-16"
+        className="rounded-2xl bg-gray-900 px-6 py-14 sm:px-10 sm:py-16 lg:px-16 shadow-xl shadow-gray-300/40"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(20px)",
@@ -372,17 +384,17 @@ const CTA = () => {
           dark
         />
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="flex flex-row items-center justify-center gap-3">
           <Link
             to="/register"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-white text-gray-900 text-[13px] font-semibold tracking-[0.06em] uppercase hover:bg-gray-100 active:scale-[0.985] transition-all duration-200"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-white text-gray-900 text-[13px] font-semibold tracking-[0.06em] uppercase hover:bg-gray-100 active:scale-[0.985] transition-all duration-200"
           >
             Get Started
             <ArrowRight size={14} strokeWidth={2} />
           </Link>
           <Link
             to="/login"
-            className="w-full sm:w-auto inline-flex items-center justify-center px-7 py-3.5 rounded-full border border-white/20 text-white text-[13px] font-semibold tracking-[0.06em] uppercase hover:border-white/40 hover:bg-white/5 transition-all duration-200"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center px-7 py-3.5 rounded-full border border-white/20 text-white text-[13px] font-semibold tracking-[0.06em] uppercase hover:border-white/40 hover:bg-white/5 transition-all duration-200"
           >
             Log In
           </Link>

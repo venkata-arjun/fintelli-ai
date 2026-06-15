@@ -18,7 +18,7 @@ const Navbar = () => {
 
   const logout = () => {
     localStorage.removeItem("token");
-    navigate("/login");
+    navigate("/");
   };
 
   return (
@@ -71,17 +71,16 @@ const Navbar = () => {
 
         {/* Right */}
         <div className="flex items-center gap-4">
-          {/* Profile dropdown — desktop */}
-          <div className="group relative hidden sm:block">
-            <button
-              onClick={() => !token && navigate("/login")}
-              className="text-gray-400 hover:text-gray-900 transition-colors"
-              aria-label="Profile"
-            >
-              <User size={18} strokeWidth={1.5} />
-            </button>
+          {/* Profile dropdown — desktop, only when logged in */}
+          {token && (
+            <div className="group relative hidden sm:block">
+              <button
+                className="text-gray-400 hover:text-gray-900 transition-colors"
+                aria-label="Profile"
+              >
+                <User size={18} strokeWidth={1.5} />
+              </button>
 
-            {token && (
               <div className="absolute right-0 pt-4 hidden group-hover:block z-50">
                 <div className="flex flex-col w-48 py-1.5 bg-white border border-gray-100 shadow-lg shadow-gray-200/60 rounded-2xl overflow-hidden">
                   {/* Header hint */}
@@ -128,8 +127,8 @@ const Navbar = () => {
                   </button>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* CTA — desktop, only when not logged in */}
           {!token && (
