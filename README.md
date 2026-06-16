@@ -60,7 +60,7 @@ The application combines modern UI design with real-time analytics and dual AI i
 
 | Service | URL |
 |---|---|
-| Live App | https://fintelli-ai.vercel.app/ |
+| Live App | https://fintelli-ai.vercel.app |
 | Backend API | https://fintelli-ai-backend.onrender.com |
 | GitHub | https://github.com/venkata-arjun/fintelli-ai |
 
@@ -390,7 +390,7 @@ git push origin feature/your-feature-name
 |---|---|
 | GitHub | https://github.com/venkata-arjun |
 | Repository | https://github.com/venkata-arjun/fintelli-ai |
-| Live App | https://fintelli-ai.vercel.app/ |
+| Live App | https://fintelli-ai.vercel.app |
 | Backend API | https://fintelli-ai-backend.onrender.com |
 
 ---
