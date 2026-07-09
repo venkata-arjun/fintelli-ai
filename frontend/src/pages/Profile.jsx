@@ -121,7 +121,13 @@ const StatCard = ({ label, value, icon: Icon, iconClass, valueClass }) => (
 /* ─────────────────────────────────────────
    AI Chat Panel
 ───────────────────────────────────────── */
-const AIChatPanel = ({ onClose, summary, userName, currency }) => {
+const AIChatPanel = ({
+  onClose,
+  summary,
+  accountBalance,
+  userName,
+  currency,
+}) => {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -144,10 +150,13 @@ const AIChatPanel = ({ onClose, summary, userName, currency }) => {
       maximumFractionDigits: 0,
     }).format(n || 0);
 
+  // Net Balance here uses the real account balance total (accountBalance),
+  // not summary.netBalance, so the AI's answers stay consistent with what
+  // the user sees on the Dashboard and Accounts pages.
   const systemPrompt = `You are Fintelli AI, a strict personal finance assistant embedded in a financial dashboard.
 
 The user's financial summary:
-- Net Balance: ${fmt(summary?.netBalance)}
+- Net Balance: ${fmt(accountBalance)}
 - Total Income: ${fmt(summary?.totalIncome)}
 - Total Expenses: ${fmt(summary?.totalExpense)}
 - Savings Rate: ${summary?.totalIncome ? Math.round(((summary.totalIncome - summary.totalExpense) / summary.totalIncome) * 100) : 0}%
@@ -339,6 +348,7 @@ const Profile = () => {
   const [passLoading, setPassLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [summary, setSummary] = useState(null);
+  const [accounts, setAccounts] = useState([]);
   const [showAI, setShowAI] = useState(false);
 
   useEffect(() => {
@@ -346,9 +356,10 @@ const Profile = () => {
 
     const load = async () => {
       try {
-        const [profileRes, summaryRes] = await Promise.all([
+        const [profileRes, summaryRes, accountsRes] = await Promise.all([
           api.get(API_PATHS.USER.PROFILE),
           api.get(API_PATHS.DASHBOARD.OVERALL_SUMMARY),
+          api.get(API_PATHS.ACCOUNTS.LIST),
         ]);
         const u = profileRes.data;
         setForm({
@@ -357,6 +368,7 @@ const Profile = () => {
           location: u.location || "",
         });
         setSummary(summaryRes.data);
+        setAccounts(accountsRes.data);
       } catch (err) {
         toast.error(err.response?.data?.message || "Failed to load profile");
       } finally {
@@ -461,7 +473,15 @@ const Profile = () => {
       })
     : "—";
 
-  const netBalance = summary ? summary.netBalance : null;
+  // Net Balance now comes from real account balances (same source of truth
+  // as the Dashboard and Accounts pages), not from summary.netBalance,
+  // which is only income − expenses derived from transactions.
+  const totalAccountBalance = accounts.reduce(
+    (sum, a) => sum + Number(a.current_balance),
+    0,
+  );
+
+  const netBalance = accounts.length > 0 ? totalAccountBalance : null;
   const totalIncome = summary ? summary.totalIncome : null;
   const totalExpense = summary ? summary.totalExpense : null;
   const balancePositive = (netBalance ?? 0) >= 0;
@@ -485,6 +505,7 @@ const Profile = () => {
         <AIChatPanel
           onClose={() => setShowAI(false)}
           summary={summary}
+          accountBalance={totalAccountBalance}
           userName={form.name}
           currency={currency}
         />

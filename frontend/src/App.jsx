@@ -13,6 +13,7 @@ import Contact from "./pages/Contact.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Layout from "./components/Layout.jsx";
 import Navbar from "./components/Navbar.jsx";
+import Accounts from "./pages/Accounts.jsx";
 
 const PublicLayout = () => (
   <>
@@ -48,6 +49,7 @@ const App = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/categories" element={<Categories />} />
+        <Route path="/accounts" element={<Accounts />} />
         <Route path="/budgets" element={<Budgets />} />
         <Route path="/insights" element={<Insights />} />
         <Route path="/profile" element={<Profile />} />

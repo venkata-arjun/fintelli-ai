@@ -8,11 +8,18 @@ import Select from "./ui/Select.jsx";
 import Textarea from "./ui/Textarea.jsx";
 import Button from "./ui/Button.jsx";
 
-const TransactionForm = ({ initial, categories, onSaved, onCancel }) => {
+const TransactionForm = ({
+  initial,
+  categories,
+  accounts,
+  onSaved,
+  onCancel,
+}) => {
   const [form, setForm] = useState({
     type: initial?.type || "expense",
     amount: initial?.amount || "",
     categoryId: initial?.category_id || "",
+    accountId: initial?.account_id || accounts?.[0]?.id || "",
     description: initial?.description || "",
     notes: initial?.notes || "",
     transactionDate:
@@ -24,12 +31,19 @@ const TransactionForm = ({ initial, categories, onSaved, onCancel }) => {
 
   const submit = async (e) => {
     e.preventDefault();
+
+    if (!form.accountId) {
+      toast.error("Please select an account");
+      return;
+    }
+
     setSaving(true);
     try {
       const payload = {
         type: form.type,
         amount: parseFloat(form.amount),
         categoryId: form.categoryId || null,
+        accountId: form.accountId,
         description: form.description || null,
         notes: form.notes || null,
         transactionDate: form.transactionDate,
@@ -85,6 +99,22 @@ const TransactionForm = ({ initial, categories, onSaved, onCancel }) => {
         value={form.amount}
         onChange={(e) => setForm({ ...form, amount: e.target.value })}
       />
+
+      <Select
+        label="Account"
+        required
+        value={form.accountId}
+        onChange={(e) => setForm({ ...form, accountId: e.target.value })}
+      >
+        <option value="" disabled>
+          Select an account
+        </option>
+        {accounts?.map((a) => (
+          <option key={a.id} value={a.id}>
+            {a.name} · {a.type}
+          </option>
+        ))}
+      </Select>
 
       <Select
         label="Category"

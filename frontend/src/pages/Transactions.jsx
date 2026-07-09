@@ -11,6 +11,7 @@ import {
   ChevronRight,
   ArrowUpDown,
   CalendarDays,
+  Landmark,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../lib/axios.js";
@@ -31,11 +32,13 @@ const Transactions = () => {
   const currency = user?.currency || "USD";
   const [allTransactions, setAllTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     search: "",
     type: "",
     categoryId: "",
+    accountId: "",
     dateFrom: "",
     dateTo: "",
   });
@@ -57,12 +60,14 @@ const Transactions = () => {
     if (filters.categoryId) params.categoryId = filters.categoryId;
     try {
       setLoading(true);
-      const [tRes, cRes] = await Promise.all([
+      const [tRes, cRes, aRes] = await Promise.all([
         api.get(API_PATHS.TRANSACTIONS.LIST, { params }),
         api.get(API_PATHS.CATEGORIES.LIST),
+        api.get(API_PATHS.ACCOUNTS.LIST),
       ]);
       setAllTransactions(tRes.data);
       setCategories(cRes.data);
+      setAccounts(aRes.data);
     } catch {
       toast.error("Failed to load transactions");
     } finally {
@@ -77,10 +82,15 @@ const Transactions = () => {
     setPage(1);
   }, [filters, sortBy, sortDir]);
 
-  // Base list: only date filters applied (no type filter yet)
-  // Used for counts so badges reflect date range but still show per-type totals
+  // Base list: account + date filters applied (no type filter yet)
+  // Used for counts and the account summary so both reflect the same scope
   const dateFilteredTransactions = useMemo(() => {
     let list = allTransactions;
+    if (filters.accountId) {
+      list = list.filter(
+        (t) => String(t.account_id) === String(filters.accountId),
+      );
+    }
     if (filters.dateFrom) {
       const from = new Date(filters.dateFrom);
       list = list.filter(
@@ -94,9 +104,9 @@ const Transactions = () => {
       );
     }
     return list;
-  }, [allTransactions, filters.dateFrom, filters.dateTo]);
+  }, [allTransactions, filters.accountId, filters.dateFrom, filters.dateTo]);
 
-  // Counts derived from date-filtered list so badges update on date change
+  // Counts derived from account+date filtered list so badges update accordingly
   const counts = useMemo(
     () => ({
       all: dateFilteredTransactions.length,
@@ -106,6 +116,28 @@ const Transactions = () => {
         .length,
     }),
     [dateFilteredTransactions],
+  );
+
+  // Summary for the selected account within the selected date range
+  const accountSummary = useMemo(() => {
+    if (!filters.accountId) return null;
+    const income = dateFilteredTransactions
+      .filter((t) => t.type === "income")
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    const expense = dateFilteredTransactions
+      .filter((t) => t.type === "expense")
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    return {
+      income,
+      expense,
+      net: income - expense,
+      count: dateFilteredTransactions.length,
+    };
+  }, [filters.accountId, dateFilteredTransactions]);
+
+  const selectedAccount = useMemo(
+    () => accounts.find((a) => String(a.id) === String(filters.accountId)),
+    [accounts, filters.accountId],
   );
 
   // Full filtered + sorted list for the table
@@ -242,11 +274,14 @@ const Transactions = () => {
   };
 
   const hasDateFilter = filters.dateFrom || filters.dateTo;
-  const activeFilterCount = [filters.categoryId, hasDateFilter].filter(
-    Boolean,
-  ).length;
+  const activeFilterCount = [
+    filters.categoryId,
+    filters.accountId,
+    hasDateFilter,
+  ].filter(Boolean).length;
   const clearDateFilter = () =>
     setFilters((f) => ({ ...f, dateFrom: "", dateTo: "" }));
+  const clearAccountFilter = () => setFilters((f) => ({ ...f, accountId: "" }));
 
   const toggleSort = (column) => {
     if (sortBy === column) {
@@ -497,7 +532,7 @@ const Transactions = () => {
             </button>
           </div>
 
-          {/* Row 2: type tabs — counts reflect date filter */}
+          {/* Row 2: type tabs — counts reflect account + date filter */}
           <div className="flex items-center gap-1 bg-white border border-gray-100 p-1 rounded-full w-full overflow-x-auto">
             {tabs.map((tab) => (
               <button
@@ -523,10 +558,32 @@ const Transactions = () => {
             ))}
           </div>
 
-          {/* Row 3: date range + category */}
+          {/* Row 3: account + date range + category */}
           <div
             className={`flex-col sm:flex-row sm:items-center gap-2 ${filtersOpen ? "flex" : "hidden sm:flex"}`}
           >
+            <div className="relative flex-1 min-w-0">
+              <Landmark
+                size={14}
+                strokeWidth={1.75}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              />
+              <select
+                value={filters.accountId}
+                onChange={(e) =>
+                  setFilters({ ...filters, accountId: e.target.value })
+                }
+                className="w-full appearance-none bg-white border border-gray-200 text-gray-800 rounded-xl pl-9 pr-8 py-3 text-[13px] focus:outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/5 transition-all duration-200 cursor-pointer"
+              >
+                <option value="">All accounts</option>
+                {accounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="relative flex-1 min-w-0">
               <CalendarDays
                 size={14}
@@ -605,6 +662,80 @@ const Transactions = () => {
           )}
         </div>
 
+        {/* Account summary — total spent/received on the selected account within the selected range */}
+        {accountSummary && (
+          <div className="mb-5 p-5 rounded-2xl border border-gray-100 bg-white">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                  <Landmark
+                    size={18}
+                    strokeWidth={1.75}
+                    className="text-gray-700"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-[15px] font-semibold text-gray-900 truncate">
+                    {selectedAccount?.name || "Account"}
+                  </h3>
+                  <p className="text-[11px] text-gray-400">
+                    {hasDateFilter
+                      ? filters.dateFrom && filters.dateTo
+                        ? `${formatDateLong(filters.dateFrom)} – ${formatDateLong(filters.dateTo)}`
+                        : filters.dateFrom
+                          ? `From ${formatDateLong(filters.dateFrom)}`
+                          : `Until ${formatDateLong(filters.dateTo)}`
+                      : "All time"}
+                    {" · "}
+                    {accountSummary.count} transaction
+                    {accountSummary.count !== 1 ? "s" : ""}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={clearAccountFilter}
+                className="text-gray-400 hover:text-gray-600 shrink-0 p-1 transition-colors"
+                aria-label="Clear account filter"
+              >
+                <X size={16} strokeWidth={1.75} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 mb-1">
+                  Spent
+                </p>
+                <p className="text-[15px] font-bold text-red-500">
+                  {formatCurrency(accountSummary.expense, currency)}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 mb-1">
+                  Received
+                </p>
+                <p className="text-[15px] font-bold text-emerald-600">
+                  {formatCurrency(accountSummary.income, currency)}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 mb-1">
+                  Net
+                </p>
+                <p
+                  className={`text-[15px] font-bold ${
+                    accountSummary.net >= 0
+                      ? "text-emerald-600"
+                      : "text-red-500"
+                  }`}
+                >
+                  {formatCurrency(accountSummary.net, currency)}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Content */}
         {loading ? (
           <div className="flex justify-center py-12">
@@ -626,11 +757,12 @@ const Transactions = () => {
           />
         ) : (
           <div className="overflow-x-auto -mx-5 sm:mx-0 px-5 sm:px-0">
-            <table className="w-full min-w-[540px]">
+            <table className="w-full min-w-[640px]">
               <thead>
                 <tr className="text-left text-[10px] font-semibold tracking-[0.18em] uppercase text-gray-400 border-b border-gray-100">
                   <th className="pb-3 pr-3">Category</th>
                   <th className="pb-3 pr-3">Description</th>
+                  <th className="pb-3 pr-3">Account</th>
                   <th className="pb-3 pr-3">
                     <button
                       onClick={() => toggleSort("date")}
@@ -680,6 +812,9 @@ const Transactions = () => {
                     </td>
                     <td className="py-3 pr-3 text-[13px] text-gray-700 max-w-[140px] truncate">
                       {t.description || "—"}
+                    </td>
+                    <td className="py-3 pr-3 text-[13px] text-gray-500 whitespace-nowrap max-w-[120px] truncate">
+                      {t.account_name || "—"}
                     </td>
                     <td className="py-3 pr-3 text-[13px] text-gray-500 whitespace-nowrap">
                       {formatDate(t.transaction_date)}
@@ -787,6 +922,7 @@ const Transactions = () => {
         <TransactionForm
           initial={editing}
           categories={categories}
+          accounts={accounts}
           onSaved={onSaved}
           onCancel={() => setModalOpen(false)}
         />

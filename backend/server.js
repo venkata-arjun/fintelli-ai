@@ -15,6 +15,7 @@ import budgetRoutes from "./routes/budgetRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import insightRoutes from "./routes/insightRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import accountRoutes from "./routes/accountRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -38,6 +39,7 @@ app.use("/api/budgets", budgetRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/insights", insightRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/accounts", accountRoutes);
 
 // Start Server
 app.listen(PORT, () => {

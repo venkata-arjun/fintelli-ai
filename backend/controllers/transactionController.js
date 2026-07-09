@@ -58,9 +58,12 @@ export const getTransactions = async (req, res) => {
       `SELECT t.*,
                     c.name AS category_name,
                     c.icon AS category_icon,
-                    c.color AS category_color
+                    c.color AS category_color,
+                    a.name AS account_name,
+                    a.type AS account_type
              FROM transactions t
              LEFT JOIN categories c ON t.category_id = c.id
+             LEFT JOIN accounts a ON t.account_id = a.id
              WHERE ${conditions.join(" AND ")}
              ORDER BY t.transaction_date DESC, t.id DESC
              LIMIT $${idx++} OFFSET $${idx}`,
@@ -75,12 +78,25 @@ export const getTransactions = async (req, res) => {
 };
 
 export const createTransaction = async (req, res) => {
-  const { categoryId, amount, type, description, notes, transactionDate } =
-    req.body;
+  const {
+    categoryId,
+    amount,
+    type,
+    description,
+    notes,
+    transactionDate,
+    accountId,
+  } = req.body;
 
   if (!amount || !type || !transactionDate) {
     return res.status(400).json({
       message: "Amount, type, and transactionDate are required",
+    });
+  }
+
+  if (!accountId) {
+    return res.status(400).json({
+      message: "Account is required",
     });
   }
 
@@ -93,12 +109,13 @@ export const createTransaction = async (req, res) => {
   try {
     const result = await pool.query(
       `INSERT INTO transactions
-            (user_id, category_id, amount, type, description, notes, transaction_date)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            (user_id, category_id, account_id, amount, type, description, notes, transaction_date)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *`,
       [
         req.userId,
         categoryId || null,
+        accountId,
         amount,
         type,
         description || null,
@@ -122,9 +139,12 @@ export const getTransactionById = async (req, res) => {
       `SELECT t.*,
                     c.name AS category_name,
                     c.icon AS category_icon,
-                    c.color AS category_color
+                    c.color AS category_color,
+                    a.name AS account_name,
+                    a.type AS account_type
              FROM transactions t
              LEFT JOIN categories c ON t.category_id = c.id
+             LEFT JOIN accounts a ON t.account_id = a.id
              WHERE t.id = $1 AND t.user_id = $2`,
       [id, req.userId],
     );
@@ -144,22 +164,31 @@ export const getTransactionById = async (req, res) => {
 
 export const updateTransaction = async (req, res) => {
   const { id } = req.params;
-  const { categoryId, amount, type, description, notes, transactionDate } =
-    req.body;
+  const {
+    categoryId,
+    accountId,
+    amount,
+    type,
+    description,
+    notes,
+    transactionDate,
+  } = req.body;
 
   try {
     const result = await pool.query(
       `UPDATE transactions
              SET category_id = COALESCE($1, category_id),
-                 amount = COALESCE($2, amount),
-                 type = COALESCE($3, type),
-                 description = COALESCE($4, description),
-                 notes = COALESCE($5, notes),
-                 transaction_date = COALESCE($6, transaction_date)
-             WHERE id = $7 AND user_id = $8
+             account_id = COALESCE($2, account_id),
+                 amount = COALESCE($3, amount),
+                 type = COALESCE($4, type),
+                 description = COALESCE($5, description),
+                 notes = COALESCE($6, notes),
+                 transaction_date = COALESCE($7, transaction_date)
+             WHERE id = $8 AND user_id = $9
              RETURNING *`,
       [
         categoryId,
+        accountId,
         amount,
         type,
         description,
@@ -231,9 +260,13 @@ export const analyzeTransactions = async (req, res) => {
           t.description,
           t.transaction_date,
           c.name AS category_name
+          a.name AS account_name,
+          a.type AS account_type
        FROM transactions t
        LEFT JOIN categories c
          ON c.id = t.category_id
+      LEFT JOIN accounts a
+ON a.id = t.account_id
        WHERE t.user_id = $1
          AND t.id = ANY($2::int[])
        ORDER BY t.transaction_date DESC`,

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Wallet,
   TrendingUp,
   TrendingDown,
   PiggyBank,
@@ -9,6 +8,7 @@ import {
   Target,
   CalendarDays,
   LayoutGrid,
+  Landmark,
 } from "lucide-react";
 import api from "../lib/axios.js";
 import { API_PATHS } from "../utils/apiPaths.js";
@@ -69,12 +69,13 @@ const Dashboard = () => {
   const [overallBreakdown, setOverallBreakdown] = useState([]);
   const [recent, setRecent] = useState([]);
   const [budgets, setBudgets] = useState([]);
+  const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [ms, os, mt, ot, mb, ob, r, bd] = await Promise.all([
+        const [ms, os, mt, ot, mb, ob, r, bd, acc] = await Promise.all([
           api.get(API_PATHS.DASHBOARD.SUMMARY),
 
           api.get(API_PATHS.DASHBOARD.OVERALL_SUMMARY),
@@ -96,6 +97,8 @@ const Dashboard = () => {
           }),
 
           api.get(API_PATHS.BUDGETS.LIST),
+
+          api.get(API_PATHS.ACCOUNTS.LIST),
         ]);
 
         setMonthlySummary(ms.data);
@@ -106,6 +109,7 @@ const Dashboard = () => {
         setOverallBreakdown(ob.data);
         setRecent(r.data);
         setBudgets(bd.data);
+        setAccounts(acc.data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -126,6 +130,11 @@ const Dashboard = () => {
   const aggColor =
     aggPct >= 100 ? "#EF4444" : aggPct >= 70 ? "#F59E0B" : "#10B981";
 
+  const totalAccountBalance = accounts.reduce(
+    (sum, a) => sum + Number(a.current_balance),
+    0,
+  );
+
   if (loading || !monthlySummary || !overallSummary) {
     return (
       <div className="flex justify-center py-16">
@@ -135,19 +144,17 @@ const Dashboard = () => {
   }
 
   // ── income / expense labels ──
+  // Net Balance lives only in the "Total Across All Accounts" strip above —
+  // it reflects real account totals, not transaction-derived income − expense,
+  // so it isn't duplicated here as a KPI card.
   const incomeLabel = view === "monthly" ? "Income" : "Total Income";
   const expenseLabel = view === "monthly" ? "Expenses" : "Total Expenses";
-  const balanceLabel = view === "monthly" ? "Net Balance" : "Net Balance";
-  const savingsLabel = view === "monthly" ? "Savings Rate" : "Savings Rate";
+  const savingsLabel = "Savings Rate";
 
   const incomeValue =
     view === "monthly" ? summary.incomeThisMonth : summary.totalIncome;
   const expenseValue =
     view === "monthly" ? summary.expenseThisMonth : summary.totalExpense;
-  const balanceValue =
-    view === "monthly"
-      ? summary.balance
-      : (summary.netBalance ?? summary.balance);
 
   return (
     <div className="space-y-6 sm:space-y-10">
@@ -171,38 +178,55 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* ── Total across accounts strip ── */}
+      <div className="p-5 sm:p-7 rounded-2xl border border-gray-100 bg-gray-900 text-white">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-2">
+              Total Across All Accounts
+            </p>
+            <span className="text-3xl sm:text-4xl font-bold tracking-tight">
+              {formatCurrency(totalAccountBalance, currency)}
+            </span>
+            <p className="text-[12px] text-gray-400 mt-1">
+              {accounts.length} account{accounts.length !== 1 ? "s" : ""}{" "}
+              connected
+            </p>
+          </div>
+          <Link
+            to="/accounts"
+            className="inline-flex items-center gap-1 text-[11px] font-semibold tracking-[0.08em] uppercase text-gray-300 hover:text-white transition-colors self-start sm:self-center"
+          >
+            View accounts
+            <ArrowRight size={14} strokeWidth={1.75} />
+          </Link>
+        </div>
+      </div>
+
       {/* ── KPI cards ── */}
       {/* Animated wrapper: key forces re-mount / fade when view changes */}
       <div
         key={view}
-        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 animate-fade-in"
+        className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 animate-fade-in"
         style={{ animation: "fadeSlideUp 0.25s ease both" }}
       >
         <KpiCard
-          label={balanceLabel}
-          value={formatCurrency(balanceValue, currency)}
-          icon={Wallet}
-          accent="violet"
-        />
-        <KpiCard
           label={incomeLabel}
           value={formatCurrency(incomeValue, currency)}
-          delta={view === "monthly" ? summary.incomeDelta : undefined}
           icon={TrendingUp}
-          accent="orange"
+          accent="income"
         />
         <KpiCard
           label={expenseLabel}
           value={formatCurrency(expenseValue, currency)}
-          delta={view === "monthly" ? summary.expenseDelta : undefined}
           icon={TrendingDown}
-          accent="rose"
+          accent="expense"
         />
         <KpiCard
           label={savingsLabel}
           value={`${summary.savingsRate.toFixed(1)}%`}
           icon={PiggyBank}
-          accent="blue"
+          accent="savings"
         />
       </div>
 
@@ -223,7 +247,10 @@ const Dashboard = () => {
                 : "Income vs expenses across all recorded months"}
             </p>
           </div>
-          <MonthlyTrendChart data={trend} currency={currency} />
+          {/* Bounded height wrapper — prevents chart from rendering unbounded */}
+          <div className="w-full h-[280px] overflow-hidden">
+            <MonthlyTrendChart data={trend} currency={currency} />
+          </div>
         </div>
 
         <div className="p-5 sm:p-7 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 hover:bg-white hover:shadow-sm transition-all duration-200">
@@ -235,14 +262,17 @@ const Dashboard = () => {
               {view === "monthly" ? "Spending this month" : "Spending all time"}
             </p>
           </div>
-          <CategoryBreakdownChart data={breakdown} currency={currency} />
+          {/* Bounded height wrapper — prevents chart from rendering unbounded */}
+          <div className="w-full h-[280px] overflow-hidden">
+            <CategoryBreakdownChart data={breakdown} currency={currency} />
+          </div>
         </div>
       </div>
 
-      {/* ── Bottom row: Recent transactions + Budget status ── */}
+      {/* ── Bottom row: Recent transactions + Budget status + Accounts ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
         {/* Recent transactions */}
-        <div className="lg:col-span-7 p-5 sm:p-7 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 hover:bg-white hover:shadow-sm transition-all duration-200">
+        <div className="lg:col-span-5 p-5 sm:p-7 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 hover:bg-white hover:shadow-sm transition-all duration-200">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-[15px] font-semibold text-gray-900">
               Recent Transactions
@@ -277,7 +307,8 @@ const Dashboard = () => {
                       <div className="text-[13px] font-medium text-gray-900 truncate">
                         {t.description || t.category_name || "Untitled"}
                       </div>
-                      <div className="text-[11px] text-gray-400">
+                      <div className="text-[11px] text-gray-400 truncate">
+                        {t.account_name ? `${t.account_name} · ` : ""}
                         {t.category_name || "Uncategorized"} ·{" "}
                         {formatDate(t.transaction_date)}
                       </div>
@@ -298,7 +329,7 @@ const Dashboard = () => {
         </div>
 
         {/* Budget status */}
-        <div className="lg:col-span-5 p-5 sm:p-7 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 hover:bg-white hover:shadow-sm transition-all duration-200">
+        <div className="lg:col-span-4 p-5 sm:p-7 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 hover:bg-white hover:shadow-sm transition-all duration-200">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-[15px] font-semibold text-gray-900">
               Budget Status
@@ -394,6 +425,71 @@ const Dashboard = () => {
                 })}
               </div>
             </>
+          )}
+        </div>
+
+        {/* Accounts */}
+        <div className="lg:col-span-3 p-5 sm:p-7 rounded-2xl border border-gray-100 bg-gray-50 hover:border-gray-300 hover:bg-white hover:shadow-sm transition-all duration-200">
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="text-[15px] font-semibold text-gray-900">
+              Accounts
+            </h2>
+            <Link
+              to="/accounts"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold tracking-[0.08em] uppercase text-gray-700 hover:text-gray-900 transition-colors"
+            >
+              View all
+              <ArrowRight size={14} strokeWidth={1.75} />
+            </Link>
+          </div>
+
+          {accounts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center mb-3">
+                <Landmark
+                  size={17}
+                  strokeWidth={1.75}
+                  className="text-gray-600"
+                />
+              </div>
+              <p className="text-[15px] font-semibold text-gray-900 mb-1">
+                No accounts yet
+              </p>
+              <Link
+                to="/accounts"
+                className="text-[11px] font-semibold tracking-[0.08em] uppercase text-gray-700 hover:text-gray-900 transition-colors"
+              >
+                Add one →
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {accounts.slice(0, 5).map((a) => (
+                <div
+                  key={a.id}
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-white transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center shrink-0">
+                      <Landmark
+                        size={14}
+                        strokeWidth={1.75}
+                        className="text-gray-600"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[13px] font-medium text-gray-900 truncate">
+                        {a.name}
+                      </div>
+                      <div className="text-[11px] text-gray-400">{a.type}</div>
+                    </div>
+                  </div>
+                  <span className="text-[13px] font-semibold text-gray-900 shrink-0">
+                    {formatCurrency(a.current_balance, currency)}
+                  </span>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>

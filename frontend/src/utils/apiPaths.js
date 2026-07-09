@@ -41,6 +41,12 @@ export const API_PATHS = {
     LIST: "/insights",
     GENERATE: "/insights/generate",
   },
+  ACCOUNTS: {
+    LIST: "/accounts",
+    CREATE: "/accounts",
+    UPDATE: (id) => `/accounts/${id}`,
+    DELETE: (id) => `/accounts/${id}`,
+  },
 };
 
 export default API_PATHS;

@@ -4,6 +4,7 @@ import {
   ArrowLeftRight,
   Folder,
   Target,
+  Landmark,
   Sparkles,
   BarChart2,
   LogOut,
@@ -15,6 +16,7 @@ const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/transactions", label: "Transactions", icon: ArrowLeftRight },
   { to: "/categories", label: "Categories", icon: Folder },
+  { to: "/accounts", label: "Accounts", icon: Landmark },
   { to: "/budgets", label: "Budgets", icon: Target },
   { to: "/insights", label: "AI Insights", icon: Sparkles },
 ];
