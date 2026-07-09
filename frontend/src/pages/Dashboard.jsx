@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Wallet,
   TrendingUp,
   TrendingDown,
   PiggyBank,
@@ -221,32 +220,21 @@ const Dashboard = () => {
       {/* ── Balance card (highlighted — reacts to This Month / All Time toggle) ── */}
       <div
         key={`balance-strip-${view}`}
-        className="relative p-5 sm:p-6 rounded-2xl bg-gray-900"
+        className="relative px-5 py-7 sm:px-7 sm:py-9 rounded-2xl bg-gray-900"
         style={{ animation: "fadeSlideUp 0.2s ease both" }}
       >
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-4 min-w-0">
-            <div
-              className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
-                balanceStripValue >= 0
-                  ? "bg-emerald-400/10 text-emerald-400"
-                  : "bg-red-400/10 text-red-400"
-              }`}
-            >
-              <Wallet size={19} strokeWidth={1.75} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold tracking-[0.14em] uppercase text-gray-400 truncate">
-                {balanceStripLabel}
-              </p>
-              <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-white truncate">
-                {balanceStripValue >= 0 ? "" : "-"}
-                {formatCurrency(Math.abs(balanceStripValue), currency)}
-              </h3>
-              <p className="text-[11px] text-gray-500 mt-0.5 truncate">
-                {balanceStripCaption}
-              </p>
-            </div>
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold tracking-[0.14em] uppercase text-gray-400 truncate">
+              {balanceStripLabel}
+            </p>
+            <h3 className="text-3xl sm:text-4xl font-bold tracking-tight text-white truncate mt-1.5">
+              {balanceStripValue >= 0 ? "" : "-"}
+              {formatCurrency(Math.abs(balanceStripValue), currency)}
+            </h3>
+            <p className="text-[11px] text-gray-500 mt-1.5 truncate">
+              {balanceStripCaption}
+            </p>
           </div>
           <Link
             to="/accounts"
