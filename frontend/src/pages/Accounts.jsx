@@ -138,26 +138,30 @@ const Accounts = () => {
         <>
           {/* Grand total across all accounts */}
           <div className="p-5 sm:p-7 rounded-2xl border border-gray-100 bg-gray-900 text-white">
-            <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-2">
+            <p className="text-[10.5px] font-semibold tracking-[0.2em] uppercase text-gray-500 mb-2.5">
               Total Across All Accounts
             </p>
-            <div className="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:gap-3">
+
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
               <span className="text-3xl sm:text-4xl font-bold tracking-tight break-all">
                 {formatCurrency(totalBalance, currency)}
               </span>
+
               <span
-                className={`text-[13px] font-semibold ${
-                  totalNetChange >= 0 ? "text-emerald-400" : "text-red-400"
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium ${
+                  totalNetChange >= 0
+                    ? "bg-emerald-400/10 text-emerald-400"
+                    : "bg-red-400/10 text-red-400"
                 }`}
               >
                 {totalNetChange >= 0 ? "+" : ""}
-                {formatCurrency(totalNetChange, currency)} from transactions
+                {formatCurrency(totalNetChange, currency)}
               </span>
             </div>
-            <p className="text-[12px] text-gray-400 mt-2 sm:mt-1">
-              Started with {formatCurrency(totalOpening, currency)} in opening
-              balances across {accounts.length} account
-              {accounts.length !== 1 ? "s" : ""}
+
+            <p className="text-[11.5px] text-gray-500 mt-3">
+              Started with {formatCurrency(totalOpening, currency)} ·{" "}
+              {accounts.length} account{accounts.length !== 1 ? "s" : ""}
             </p>
           </div>
 
