@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Plus, Pencil, Trash2, Landmark, Wallet } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Landmark,
+  Wallet,
+  ChevronDown,
+} from "lucide-react";
 import api from "../lib/axios";
 import { API_PATHS } from "../utils/apiPaths";
 import Modal from "../components/ui/Modal";
@@ -18,6 +25,10 @@ const Accounts = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [expandedId, setExpandedId] = useState(null); // mobile-only breakdown toggle
+
+  const toggleExpand = (id) =>
+    setExpandedId((prev) => (prev === id ? null : id));
 
   const fetchAccounts = async () => {
     try {
@@ -80,20 +91,21 @@ const Accounts = () => {
   const totalNetChange = totalBalance - totalOpening;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 sm:space-y-8">
+      {/* ── Header row ── */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400">
             Finance
           </p>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">
             Accounts
           </h1>
         </div>
 
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-900 text-white text-[12px] font-semibold tracking-[0.08em] uppercase hover:bg-black active:scale-[0.985] transition-all duration-200 shadow-sm shadow-gray-200"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-gray-900 text-white text-[12px] font-semibold tracking-[0.08em] uppercase hover:bg-black active:scale-[0.985] transition-all duration-200 shadow-sm shadow-gray-200 w-full sm:w-auto"
         >
           <Plus size={16} strokeWidth={1.75} />
           Add Account
@@ -105,14 +117,14 @@ const Accounts = () => {
           <Spinner size="lg" />
         </div>
       ) : accounts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center border border-gray-100 rounded-2xl bg-gray-50">
+        <div className="flex flex-col items-center justify-center py-14 sm:py-16 px-4 text-center border border-gray-100 rounded-2xl bg-gray-50">
           <div className="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center mb-3">
             <Wallet size={20} strokeWidth={1.75} className="text-gray-600" />
           </div>
           <p className="text-[15px] font-semibold text-gray-900 mb-1">
             No accounts yet
           </p>
-          <p className="text-[13px] text-gray-500 mb-4">
+          <p className="text-[13px] text-gray-500 mb-4 max-w-xs">
             Add a bank, cash, or card account to start tracking balances.
           </p>
           <button
@@ -129,8 +141,8 @@ const Accounts = () => {
             <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-2">
               Total Across All Accounts
             </p>
-            <div className="flex items-baseline gap-3 flex-wrap">
-              <span className="text-3xl sm:text-4xl font-bold tracking-tight">
+            <div className="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:gap-3">
+              <span className="text-3xl sm:text-4xl font-bold tracking-tight break-all">
                 {formatCurrency(totalBalance, currency)}
               </span>
               <span
@@ -142,7 +154,7 @@ const Accounts = () => {
                 {formatCurrency(totalNetChange, currency)} from transactions
               </span>
             </div>
-            <p className="text-[12px] text-gray-400 mt-1">
+            <p className="text-[12px] text-gray-400 mt-2 sm:mt-1">
               Started with {formatCurrency(totalOpening, currency)} in opening
               balances across {accounts.length} account
               {accounts.length !== 1 ? "s" : ""}
@@ -159,13 +171,14 @@ const Accounts = () => {
               return (
                 <div
                   key={acc.id}
-                  className="bg-white border border-gray-100 rounded-2xl p-5 hover:border-gray-300 hover:shadow-sm transition-all duration-200"
+                  className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-5 hover:border-gray-300 hover:shadow-sm transition-all duration-200"
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-3 mb-4">
+                    {/* Icon + name/type */}
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
                         <Landmark
-                          size={20}
+                          size={19}
                           strokeWidth={1.75}
                           className="text-gray-700"
                         />
@@ -175,19 +188,22 @@ const Accounts = () => {
                         <h3 className="font-semibold text-gray-900 truncate">
                           {acc.name}
                         </h3>
-                        <p className="text-sm text-gray-500">{acc.type}</p>
+                        <p className="text-sm text-gray-500 truncate">
+                          {acc.type}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6 sm:gap-8 shrink-0">
-                      <div className="text-right">
+                    {/* Balance + actions */}
+                    <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 pl-14 sm:pl-0">
+                      <div className="text-left sm:text-right">
                         <p className="text-xs text-gray-400">Current Balance</p>
-                        <p className="font-semibold text-gray-900">
+                        <p className="font-semibold text-gray-900 break-all">
                           {formatCurrency(current, currency)}
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 shrink-0">
                         <button
                           onClick={() => openEdit(acc)}
                           className="text-gray-500 hover:text-black transition-colors"
@@ -208,22 +224,45 @@ const Accounts = () => {
                     </div>
                   </div>
 
-                  {/* Opening → Transactions → Current breakdown */}
-                  <div className="grid grid-cols-3 gap-3 pt-4 border-t border-gray-100">
-                    <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
-                      <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 mb-1">
-                        Opening Balance
+                  {/* Mobile-only toggle for the breakdown below */}
+                  <button
+                    onClick={() => toggleExpand(acc.id)}
+                    className="sm:hidden flex items-center justify-center gap-1.5 w-full text-[11px] font-semibold tracking-[0.08em] uppercase text-gray-400 hover:text-gray-700 transition-colors pt-4 border-t border-gray-100"
+                  >
+                    {expandedId === acc.id
+                      ? "Hide breakdown"
+                      : "Show breakdown"}
+                    <ChevronDown
+                      size={13}
+                      strokeWidth={2}
+                      className={`transition-transform duration-200 ${
+                        expandedId === acc.id ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {/* Opening → Transactions → Current breakdown
+                      Mobile: hidden unless expanded, then stacked in one column.
+                      sm and up: always visible as a 3-column row. */}
+                  <div
+                    className={`${
+                      expandedId === acc.id ? "grid" : "hidden"
+                    } sm:grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mt-3 sm:mt-0 pt-0 sm:pt-4 sm:border-t sm:border-gray-100`}
+                  >
+                    <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 min-w-0 flex items-center justify-between sm:block">
+                      <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 sm:mb-1 truncate">
+                        Opening
                       </p>
-                      <p className="text-[14px] font-bold text-gray-900">
+                      <p className="text-[14px] font-bold text-gray-900 truncate">
                         {formatCurrency(opening, currency)}
                       </p>
                     </div>
-                    <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
-                      <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 mb-1">
-                        From Transactions
+                    <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 min-w-0 flex items-center justify-between sm:block">
+                      <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 sm:mb-1 truncate">
+                        Change
                       </p>
                       <p
-                        className={`text-[14px] font-bold ${
+                        className={`text-[14px] font-bold truncate ${
                           netChange >= 0 ? "text-emerald-600" : "text-red-500"
                         }`}
                       >
@@ -231,11 +270,11 @@ const Accounts = () => {
                         {formatCurrency(netChange, currency)}
                       </p>
                     </div>
-                    <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
-                      <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 mb-1">
-                        Current Balance
+                    <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 min-w-0 flex items-center justify-between sm:block">
+                      <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 sm:mb-1 truncate">
+                        Current
                       </p>
-                      <p className="text-[14px] font-bold text-gray-900">
+                      <p className="text-[14px] font-bold text-gray-900 truncate">
                         {formatCurrency(current, currency)}
                       </p>
                     </div>
