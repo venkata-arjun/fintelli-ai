@@ -259,14 +259,13 @@ export const analyzeTransactions = async (req, res) => {
           t.type,
           t.description,
           t.transaction_date,
-          c.name AS category_name
+          c.name AS category_name,
           a.name AS account_name,
           a.type AS account_type
        FROM transactions t
        LEFT JOIN categories c
          ON c.id = t.category_id
-      LEFT JOIN accounts a
-ON a.id = t.account_id
+      LEFT JOIN accounts a ON a.id = t.account_id
        WHERE t.user_id = $1
          AND t.id = ANY($2::int[])
        ORDER BY t.transaction_date DESC`,

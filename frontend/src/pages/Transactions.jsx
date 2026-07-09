@@ -701,25 +701,25 @@ const Transactions = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
-                <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 mb-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+              <div className="flex items-center justify-between sm:block p-3 rounded-xl bg-gray-50 border border-gray-100">
+                <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 sm:mb-1">
                   Spent
                 </p>
                 <p className="text-[15px] font-bold text-red-500">
                   {formatCurrency(accountSummary.expense, currency)}
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
-                <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 mb-1">
+              <div className="flex items-center justify-between sm:block p-3 rounded-xl bg-gray-50 border border-gray-100">
+                <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 sm:mb-1">
                   Received
                 </p>
                 <p className="text-[15px] font-bold text-emerald-600">
                   {formatCurrency(accountSummary.income, currency)}
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
-                <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 mb-1">
+              <div className="flex items-center justify-between sm:block p-3 rounded-xl bg-gray-50 border border-gray-100">
+                <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-gray-400 sm:mb-1">
                   Net
                 </p>
                 <p
