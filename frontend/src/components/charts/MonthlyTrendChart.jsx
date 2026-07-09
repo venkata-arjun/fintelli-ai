@@ -66,6 +66,20 @@ const CustomTooltip = ({ active, payload, label, currency }) => {
 };
 
 // ─────────────────────────────────────────────────────────────
+// Y-axis tick formatter
+// Below 1000, "k" notation just rounds everything to "0k" — show the
+// plain number instead. At/above 1000, keep the compact "Nk" form.
+// ─────────────────────────────────────────────────────────────
+const formatAxisTick = (value) => {
+  const abs = Math.abs(value);
+  if (abs >= 1000) {
+    const scaled = value / 1000;
+    return `${Number.isInteger(scaled) ? scaled : scaled.toFixed(1)}k`;
+  }
+  return `${value}`;
+};
+
+// ─────────────────────────────────────────────────────────────
 // Chart
 // ─────────────────────────────────────────────────────────────
 const MonthlyTrendChart = ({ data, currency }) => {
@@ -115,7 +129,8 @@ const MonthlyTrendChart = ({ data, currency }) => {
               tickLine={false}
               axisLine={false}
               width={40}
-              tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+              allowDecimals={false}
+              tickFormatter={formatAxisTick}
             />
 
             <Tooltip

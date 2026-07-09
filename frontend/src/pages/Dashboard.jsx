@@ -291,7 +291,7 @@ const Dashboard = () => {
             }
           />
           {/* Bounded height wrapper — prevents chart from rendering unbounded */}
-          <div className="w-full h-[280px] overflow-hidden">
+          <div className="w-full h-[310px] overflow-hidden">
             <MonthlyTrendChart data={trend} currency={currency} />
           </div>
         </div>
@@ -306,7 +306,7 @@ const Dashboard = () => {
             }
           />
           {/* Bounded height wrapper — prevents chart from rendering unbounded */}
-          <div className="w-full h-[280px] overflow-hidden">
+          <div className="w-full h-[310px] overflow-hidden">
             <CategoryBreakdownChart data={breakdown} currency={currency} />
           </div>
         </div>
